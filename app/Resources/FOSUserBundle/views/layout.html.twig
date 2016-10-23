@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="cache-control" content="max-age=0" />
+    <meta http-equiv="cache-control" content="no-cache" />
+    <meta http-equiv="expires" content="0" />
+    <title>Login page</title>
+    <style>
+        body {
+            background: url('/assets/images/login_1.jpg') no-repeat fixed;
+            background-size: cover;
+        }
+
+        .container {
+            position: absolute;
+            top: 150px;
+            left: 150px;
+        }
+
+        .login {
+            background-color: rgba(0, 75, 1, 0.13);
+            padding: 12px;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+            border-radius: 15px;
+        }
+
+        input:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0px 1000px #004B01 inset;
+            -webkit-text-fill-color: white !important;
+        }
+
+        input {
+            width: 200px;
+            display: block;
+            padding: 10px;
+            margin: 5px;
+            background-color: rgba(46, 255, 81, 0.01);
+            color: white;
+            border: 1px inset #4CAF50;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .alert {
+            padding: 2px 8px 4px;
+            color: white;
+            display: block;
+        }
+
+        .info > span {
+            padding: 2px 8px 4px;
+            color: white;
+            display: none;
+        }
+
+        .button-group {
+            margin: 5px 9px 5px;
+        }
+
+        .button-group.left {
+
+        }
+
+        .button-group.right {
+            margin-bottom: 0px;
+        }
+
+        .button {
+            display: inline-block;
+            background-color: #429946;
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            text-align: center;
+            width: 34%;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    {% if error is defined and error %}
+        <div class="alert">
+            <span>{{ error.messageKey|trans(error.messageData, 'security') }}</span>
+        </div>
+    {% endif %}
+
+    {% if app.request.hasPreviousSession %}
+        {% for type, messages in app.session.flashbag.all() %}
+            {% for message in messages %}
+                <div class="alert">
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+        {% endfor %}
+    {% endif %}
+    {% block fos_user_content %}
+    {% endblock fos_user_content %}
+</div>
+</body>
+</html>

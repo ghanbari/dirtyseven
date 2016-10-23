@@ -1,0 +1,11 @@
+imports:
+    - { resource: "@FunProUserBundle/Resources/config/services.yml" }
+    - { resource: "@FunProHomeBundle/Resources/config/services.yml" }
+
+#services:
+#    jms_serializer.naming_strategy:
+#        class: 'JMS\Serializer\Naming\SerializedNameAnnotationStrategy'
+#        arguments: [@jms_serializer.identical_strategy]
+#
+#    jms_serializer.identical_strategy:
+#        class: 'JMS\Serializer\Naming\IdenticalPropertyNamingStrategy'

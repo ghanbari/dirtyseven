@@ -1,0 +1,19 @@
+hwi_oauth:
+    connect:
+        account_connector: fun_pro.user.oauth_provider
+    firewall_names: [main]
+    resource_owners:
+        google:
+            type:                google
+            client_id:           "%hwi.oauth2.google.client_id%"
+            client_secret:       "%hwi.oauth2.google.client_secret%"
+            scope:               "%hwi.oauth2.google.scope%"
+        yahoo:
+            type:                yahoo
+            client_id:           "%hwi.oauth2.yahoo.client_id%"
+            client_secret:       "%hwi.oauth2.yahoo.client_secret%"
+    fosub:
+        username_iterations: 30
+        properties:
+            google: googleId
+            yahoo:  yahooId

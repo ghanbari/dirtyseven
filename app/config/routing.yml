@@ -1,0 +1,23 @@
+fun_pro_home_res:
+    resource: "@FunProHomeBundle/Resources/config/routing.yml"
+    type:     rest
+
+oauth_yahoo_login:
+    path:     /connect/check-yahoo
+
+oauth_google_login:
+    path:     /connect/check-google
+
+hwi_oauth_redirect:
+    resource: "@HWIOAuthBundle/Resources/config/routing/redirect.xml"
+    prefix:   /connect
+
+hwi_oauth_connect:
+    resource: "@HWIOAuthBundle/Resources/config/routing/connect.xml"
+    prefix:   /connect
+
+fos_user:
+    resource: "@FOSUserBundle/Resources/config/routing/all.xml"
+
+fos_js_routing:
+    resource: "@FOSJsRoutingBundle/Resources/config/routing/routing.xml"

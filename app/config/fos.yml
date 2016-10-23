@@ -1,0 +1,56 @@
+fos_user:
+    db_driver: orm # other valid values are 'mongodb', 'couchdb' and 'propel'
+    firewall_name: main
+    user_class: FunPro\UserBundle\Entity\User
+
+fos_rest:
+    view:
+        view_response_listener:
+            enabled: true
+            force: false
+        formats:
+            xml: false
+            json: true
+        templating_formats:
+            html: true
+    routing_loader:
+        default_format: html
+        include_format: false
+    body_listener:
+        enabled:              true
+        default_format:       json
+        throw_exception_on_unsupported_content_type:  true
+        decoders:
+            json: fos_rest.decoder.json
+    body_converter:
+        enabled:              true
+        validate:             true
+        validation_errors_argument:  validationErrors
+    format_listener:
+        rules:
+            - { path: ^/admin, priorities: [html, json], fallback_format: html, prefer_extension: true }
+            - { path: ^/, host: api.%router.request_context.host%, priorities: [json], fallback_format: json, prefer_extension: true }
+            - { path: ^/, priorities: [html], fallback_format: html, prefer_extension: false}
+        enabled: true
+    versioning:
+        enabled:              true
+        default_version:      "%api.version.current%"
+        resolvers:
+            media_type:
+                enabled:              true
+                regex:                '/(v|version)=(?P<version>[0-9\.]+)/'
+    serializer:
+        groups: ['Public']
+        serialize_null: false
+    param_fetcher_listener:
+        enabled: true
+        force:   false
+    access_denied_listener:
+        enabled: true
+        formats:
+            json: true
+    exception:
+        enabled: true
+#        codes:
+        messages:
+            'Symfony\Component\HttpKernel\Exception\NotFoundHttpException': true

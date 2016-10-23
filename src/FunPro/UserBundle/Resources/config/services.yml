@@ -1,0 +1,4 @@
+services:
+    fun_pro.user.oauth_provider:
+        class:     FunPro\UserBundle\Security\Core\OAuth\UserProvider
+        parent:    hwi_oauth.user.provider.fosub_bridge

@@ -1,0 +1,24 @@
+{% trans_default_domain 'FOSUserBundle' %}
+
+{% if form.vars.errors or form.username.vars.errors is defined or form.email.vars.errors is defined or form.plainPassword.vars.errors is defined %}
+    <div class="alert">
+        {{ form_errors(form) }}
+        {{ form_errors(form.username) }}
+        {{ form_errors(form.email) }}
+        {{ form_errors(form.plainPassword) }}
+    </div>
+{% endif %}
+
+<div class="login">
+    <form id="login" class="login-form" action="{{ path("fos_user_registration_register") }}" method="post">
+        {{ form_widget(form._token) }}
+        <input name="fos_user_registration_form[email]" type="text" value="{{ form.email.vars.value }}" placeholder="Email" required="required" />
+        <input name="fos_user_registration_form[username]" type="text" value="{{ form.username.vars.value }}" placeholder="Username" required="required" />
+        <input name="fos_user_registration_form[plainPassword][first]" type="password" placeholder="Password" required="required" />
+        <input name="fos_user_registration_form[plainPassword][second]" type="password" placeholder="Password" required="required" />
+        <div class="button-group left">
+            <a class="button" onclick="document.getElementById('login').submit();" style="cursor: pointer">Register</a>
+            <a class="button" href="{{ path('fos_user_security_login') }}">Login</a>
+        </div>
+    </form>
+</div>
