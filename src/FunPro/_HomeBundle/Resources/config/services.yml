@@ -1,0 +1,24 @@
+services:
+    fun_pro_client_connection:
+        class: FunPro\HomeBundle\EventListener\ClientConnection
+        arguments: ["@gos_web_socket.client_storage", "@gos_web_socket.websocket.client_manipulator"]
+        tags:
+            - { name: kernel.event_subscriber }
+
+    fun_pro_public_topic:
+        class: FunPro\HomeBundle\EventListener\PublicTopic
+        arguments: ["@gos_web_socket.websocket.client_manipulator", "@gos_web_socket.wamp.topic_manager"]
+        tags:
+            - { name: gos_web_socket.topic }
+
+    fun_pro_game_topic:
+        class: FunPro\HomeBundle\EventListener\GameTopic
+        arguments: ["@gos_web_socket.websocket.client_manipulator", "@gos_web_socket.wamp.topic_manager", "@snc_redis.default"]
+        tags:
+            - { name: gos_web_socket.topic }
+
+    fun_pro_game_rpc:
+        class: FunPro\HomeBundle\EventListener\Game
+        arguments: ["@snc_redis.default", "@gos_web_socket.websocket.client_manipulator", "@gos_web_socket.wamp.topic_manager"]
+        tags:
+            - { name: gos_web_socket.rpc }

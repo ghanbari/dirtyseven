@@ -1,0 +1,23 @@
+{
+  "name": "dirty_seven",
+  "authors": [
+    "Ghanbari <ghanbari.daniel@gmail.com>"
+  ],
+  "description": "Dirty Seven Game",
+  "main": "",
+  "license": "MIT",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "4",
+    "font-awesome": "fontawesome#^4.7.0",
+    "jquery-load-template": "https://github.com/codepb/jquery-template.git#^1.5.10"
+  }
+}

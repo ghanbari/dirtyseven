@@ -2,101 +2,59 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta http-equiv="cache-control" content="max-age=0" />
     <meta http-equiv="cache-control" content="no-cache" />
     <meta http-equiv="expires" content="0" />
+    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprouser/css/login.css') }}" />
+    <link rel="stylesheet" media="screen and (orientation:portrait)" type="text/css" href="{{ asset('bundles/funprouser/css/portrait.css') }}" />
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/bootstrap/dist/css/bootstrap.css') }}" />
     <title>Login page</title>
-    <style>
-        body {
-            background: url('/assets/images/login_1.jpg') no-repeat fixed;
-            background-size: cover;
-        }
-
-        .container {
-            position: absolute;
-            top: 150px;
-            left: 150px;
-        }
-
-        .login {
-            background-color: rgba(0, 75, 1, 0.13);
-            padding: 12px;
-            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-            border-radius: 15px;
-        }
-
-        input:-webkit-autofill {
-            -webkit-box-shadow: 0 0 0px 1000px #004B01 inset;
-            -webkit-text-fill-color: white !important;
-        }
-
-        input {
-            width: 200px;
-            display: block;
-            padding: 10px;
-            margin: 5px;
-            background-color: rgba(46, 255, 81, 0.01);
-            color: white;
-            border: 1px inset #4CAF50;
-            border-radius: 5px;
-            outline: none;
-        }
-
-        .alert {
-            padding: 2px 8px 4px;
-            color: white;
-            display: block;
-        }
-
-        .info > span {
-            padding: 2px 8px 4px;
-            color: white;
-            display: none;
-        }
-
-        .button-group {
-            margin: 5px 9px 5px;
-        }
-
-        .button-group.left {
-
-        }
-
-        .button-group.right {
-            margin-bottom: 0px;
-        }
-
-        .button {
-            display: inline-block;
-            background-color: #429946;
-            color: white;
-            text-decoration: none;
-            padding: 8px 16px;
-            font-size: 14px;
-            text-align: center;
-            width: 34%;
-        }
-    </style>
 </head>
 <body>
-<div class="container">
-    {% if error is defined and error %}
-        <div class="alert">
-            <span>{{ error.messageKey|trans(error.messageData, 'security') }}</span>
-        </div>
-    {% endif %}
+{#<div class="container">#}
+    {#{% if error is defined and error %}#}
+        {#<div class="alert">#}
+            {#<span>{{ error.messageKey|trans(error.messageData, 'security') }}</span>#}
+        {#</div>#}
+    {#{% endif %}#}
 
-    {% if app.request.hasPreviousSession %}
-        {% for type, messages in app.session.flashbag.all() %}
-            {% for message in messages %}
-                <div class="alert">
-                    <span>{{ message }}</span>
+    {#{% if app.request.hasPreviousSession %}#}
+        {#{% for type, messages in app.session.flashbag.all() %}#}
+            {#{% for message in messages %}#}
+                {#<div class="alert">#}
+                    {#<span>{{ message }}</span>#}
+                {#</div>#}
+            {#{% endfor %}#}
+        {#{% endfor %}#}
+    {#{% endif %}#}
+    {#{% block fos_user_content %}#}
+    {#{% endblock fos_user_content %}#}
+    {#<script src="{{ asset('assets/jquery/dist/jquery.js') }}" />#}
+    {#<script src="{{ asset('assets/bootstrap/dist/js/bootstrap.js') }}" />#}
+{#</div>#}
+
+<div class="change-orientation-warning" style="display: none">Sorry! This game work in landscape mode</div>
+<div class="container">
+<div class="row">
+    <div class="col-md-6">
+        <div class="login">
+            <form id="login" class="form-control" action="{{ path("fos_user_security_check") }}" method="post">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token }}" />
+                <input name="_username" value="{{ last_username }}" type="text" placeholder="Email" required="required" />
+                <input name="_password" type="password" placeholder="Password" required="required" />
+                <div class="button-group left">
+                    <a class="button" onclick="document.getElementById('login').submit();" style="cursor: pointer">Login</a>
+                    <a class="button" href="{{ path('fos_user_registration_register') }}">Register</a>
                 </div>
-            {% endfor %}
-        {% endfor %}
-    {% endif %}
-    {% block fos_user_content %}
-    {% endblock fos_user_content %}
+                <div class="button-group right">
+                    <a class="button" href="{{ path('hwi_oauth_service_redirect', {'service': 'google'}) }}">Google</a>
+                    <a class="button" href="{{ path('hwi_oauth_service_redirect', {'service': 'yahoo'}) }}">Yahoo</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 </div>
 </body>
 </html>

@@ -2,4 +2,10 @@
 gos_web_socket:
     server:
         port: 8080        #The port the socket server will listen on
-        host: 127.0.0.1   #The host ip to bind to
+        host: dirtyseven.ir   #The host ip to bind to
+        router:
+            resources:
+                - "@FunProUserBundle/Resources/config/pubsub.yml"
+    client:
+        firewall: main
+        session_handler: "@snc_redis.session.handler"

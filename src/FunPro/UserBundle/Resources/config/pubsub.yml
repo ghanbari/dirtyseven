@@ -1,0 +1,11 @@
+fun_pro.topic_public:
+    channel: chat/public
+    handler:
+        callback: 'chat.public'
+fun_pro.rpc_user:
+    channel: user/{method}
+    handler:
+        callback: 'user.rpc'
+    requirements:
+        method:
+            pattern: "[a-z_]+"

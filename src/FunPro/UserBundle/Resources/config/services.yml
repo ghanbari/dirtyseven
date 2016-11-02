@@ -2,3 +2,15 @@ services:
     fun_pro.user.oauth_provider:
         class:     FunPro\UserBundle\Security\Core\OAuth\UserProvider
         parent:    hwi_oauth.user.provider.fosub_bridge
+
+    fun_pro_user.chat.public:
+        class: FunPro\UserBundle\Topic\PublicTopic
+        arguments: ["@gos_web_socket.wamp.topic_manager", "@gos_web_socket.websocket.client_manipulator", "@snc_redis.default"]
+        tags:
+            - { name: gos_web_socket.topic }
+
+    fun_pro_user.user_rpc:
+        class: FunPro\UserBundle\RPC\UserService
+        arguments: ["@gos_web_socket.wamp.topic_manager", "@gos_web_socket.websocket.client_manipulator", "@snc_redis.default", "@doctrine"]
+        tags:
+            - { name: gos_web_socket.rpc }

@@ -1,0 +1,14 @@
+.change-orientation-warning {
+    display: block !important;
+    text-align: center;
+    padding: 50% 10px;
+}
+
+.container, .container-fluid {
+    display: none;
+}
+
+body {
+    background: #ffffff;
+    background-image: none;
+}

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/bootstrap/dist/css/bootstrap.css') }}" />
+    <script src="{{ asset('assets/jquery/dist/jquery.js') }}"></script>
+    <script src="{{ asset('assets/bootstrap/dist/js/bootstrap.js') }}"></script>
+    <script src="{{ asset('assets/pokerJs/release/poker.min.js') }}"></script>
+    <style>
+        body {
+            background-image: url('{{ asset("images/Viaden table2.jpg") }}');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+        }
+        .new_game {
+            position: relative;
+            right: 25px;
+            margin: 5px;
+            padding: 5px 12px;
+            color: #ffffff;
+            background-color: #398439;
+        }
+        #free {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #your_cards {
+            position: absolute;
+            top: 60%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+    {{ ws_client() }}
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3">
+            <button class="new_game">New Game</button>
+        </div>
+    </div>
+    <div id="free"></div>
+    <div id="your_cards"></div>
+</div>
+<script>
+    var status = 'disconnected';
+    var socket;
+    var session;
+    var game_room;
+
+    $(document).ready(function() {
+
+        $('#your_cards').on('click', '._card', function (event) {
+            session.publish('game/room/' + game_room, $(this).data('card'));
+        });
+
+        function startGame(room) {
+            game_room = room;
+            console.log('start game ' + room);
+            session.subscribe('game/room/'+room, function(uri, payload) {
+                console.log(payload);
+            });
+            session.call('game/cards', {'room': room}).then(function (result) {
+                for (var i = 0; i < result.your.length; i++) {
+                    var card = result.your[i];
+                    var img = Poker.getCardImage(45, card.charAt(0), card.substr(1));
+                    $(img).addClass('_card').data('card', card);
+                    $('#your_cards').append(img);
+                }
+
+                var center = result.free[result.free.length - 1];
+                $('#free').append(Poker.getCardImage(45,center.charAt(0),center.substr(1)));
+                $('#free').append(Poker.getBackImage(45));
+            }, function (error) {
+                console.log(error);
+            });
+        }
+
+        function connect() {
+            socket = WS.connect("ws://dirtyseven.ir:8080");
+
+            socket.on('socket/connect', function (sess) {
+                session = sess;
+                status = 'connected';
+                console.log("Successfully Connected!");
+
+                session.subscribe('chat/public', function(uri, payload) {
+                    console.log(uri);
+                    console.log(payload);
+                    if (payload.type == 'new') {
+                        startGame(payload.room);
+                    }
+                })
+            });
+
+            socket.on('socket/disconnect', function (error) {
+                status = 'disconnected';
+                console.log("Disconnected for " + error.reason + " with code " + error.code);
+            });
+        }
+
+//        setInterval(function () {
+//            if (status == 'disconnected') {
+                connect();
+//            }
+//        }, 1000);
+    });
+
+    $('.new_game').click(function (event) {
+        if (status != 'disconnected') {
+            session.call('game/start').then(function (result) {
+                console.log(result);
+            }, function (error) {
+                console.log(error);
+            });
+        } else {
+            alert('disconnected!');
+        }
+    });
+</script>
+</body>
+</html>

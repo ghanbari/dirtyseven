@@ -1,0 +1,70 @@
+body {
+    background: url('/bundles/funprouser/images/login_bg.jpg') no-repeat fixed;
+    background-size: cover;
+}
+
+
+/*.container {*/
+    /*position: absolute;*/
+    /*top: 150px;*/
+    /*left: 150px;*/
+/*}*/
+
+/*.login {*/
+    /*background-color: rgba(0, 75, 1, 0.13);*/
+    /*padding: 12px;*/
+    /*box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);*/
+    /*border-radius: 15px;*/
+/*}*/
+
+/*input:-webkit-autofill {*/
+    /*-webkit-box-shadow: 0 0 0px 1000px #004B01 inset;*/
+    /*-webkit-text-fill-color: white !important;*/
+/*}*/
+
+/*input {*/
+    /*width: 200px;*/
+    /*display: block;*/
+    /*padding: 10px;*/
+    /*margin: 5px;*/
+    /*background-color: rgba(46, 255, 81, 0.01);*/
+    /*color: white;*/
+    /*border: 1px inset #4CAF50;*/
+    /*border-radius: 5px;*/
+    /*outline: none;*/
+/*}*/
+
+/*.alert {*/
+    /*padding: 2px 8px 4px;*/
+    /*color: white;*/
+    /*display: block;*/
+/*}*/
+
+/*.info > span {*/
+    /*padding: 2px 8px 4px;*/
+    /*color: white;*/
+    /*display: none;*/
+/*}*/
+
+/*.button-group {*/
+    /*margin: 5px 9px 5px;*/
+/*}*/
+
+/*.button-group.left {*/
+
+/*}*/
+
+/*.button-group.right {*/
+    /*margin-bottom: 0px;*/
+/*}*/
+
+/*.button {*/
+    /*display: inline-block;*/
+    /*background-color: #429946;*/
+    /*color: white;*/
+    /*text-decoration: none;*/
+    /*padding: 8px 16px;*/
+    /*font-size: 14px;*/
+    /*text-align: center;*/
+    /*width: 34%;*/
+/*}*/
