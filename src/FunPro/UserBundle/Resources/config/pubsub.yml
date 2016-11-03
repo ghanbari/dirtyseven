@@ -9,3 +9,10 @@ fun_pro.rpc_user:
     requirements:
         method:
             pattern: "[a-z_]+"
+fun_pro.rpc_friend:
+    channel: friend/{method}
+    handler:
+        callback: 'friend.rpc'
+    requirements:
+        method:
+            pattern: "[a-z_]+"

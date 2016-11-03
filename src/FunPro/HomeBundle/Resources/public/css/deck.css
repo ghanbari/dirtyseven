@@ -29,7 +29,7 @@
     list-style-type: none;
     margin: 0;
     padding: 0;
-    overflow: hidden;
+    /*overflow: hidden;*/
 }
 
 .menu li {
@@ -37,7 +37,7 @@
     position: relative;
 }
 
-.menu li a{
+.menu li a:not(.dropdown-item){
     display: block;
     text-decoration: none;
     padding: 12px 10px;
@@ -114,6 +114,12 @@ li.messenger{
     font-size: 0.8rem;
     font-weight: bold;
     color: #009a00;
+    text-transform: capitalize;
+}
+
+#messages-archive .message-author {
+    color: rgb(2, 58, 46);
+    text-transform: capitalize;
 }
 
 #messages-archive{
@@ -142,13 +148,13 @@ li.messenger{
     display: block;
 }
 
-.game_invitation::before{
+.messenger_invitation::before{
     display: block;
     content: '';
     margin-bottom: 10px;
 }
 
-.game_invitation > .message {
+.messenger_invitation > .message {
     display: inline-block;
     color: #ffffff;
     font-size: 0.8rem;
@@ -167,4 +173,26 @@ table.invited_users_list tr:first-child td{
 
 a.disabled {
     pointer-events: none;
+}
+
+button.transparent {
+    background: transparent;
+    outline: none;
+    color: rgba(138, 47, 108, 0.8);
+    border: 0;
+    padding: 0;
+    font-size: 1.3rem;
+    cursor: pointer;
+}
+
+.dropdown.inline {
+    display: inline-block;
+}
+
+hr:last-child {
+    display: none;
+}
+
+.friend-request > .dropdown-menu {
+    padding: 0.3rem;
 }

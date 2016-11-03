@@ -45,14 +45,6 @@ class UserService implements RpcInterface
         $this->doctrine = $doctrine;
     }
 
-    /**
-     * @return string
-     */
-    public function getName()
-    {
-        return 'user.rpc';
-    }
-
     private function createGame(UserInterface $owner, $type='public', $gameName='7')
     {
         $game = array(
@@ -76,6 +68,7 @@ class UserService implements RpcInterface
             'game' => $game
         );
     }
+
 
     /**
      * @param UserInterface $owner
@@ -109,6 +102,14 @@ class UserService implements RpcInterface
         } else {
             throw new \RuntimeException('You can not invite users to this game');
         }
+    }
+
+    /**
+     * @return string
+     */
+    public function getName()
+    {
+        return 'user.rpc';
     }
 
 //    public function status(ConnectionInterface $connection, WampRequest $request, $params)

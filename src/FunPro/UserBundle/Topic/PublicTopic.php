@@ -58,7 +58,12 @@ class PublicTopic implements TopicInterface
         $user = $this->clientManipulator->getClient($connection);
         $this->redis->ltrim('Inbox:' . $user->getUsername(), 0, 100);
         $notifications = $this->redis->lrange('Inbox:' . $user->getUsername(), 0, -1);
-        $topic->broadcast('Welcome to game.', [], [$connection->WAMP->sessionId]);
+        $topic->broadcast(
+            array('from' => 'Bot', 'type' => 'notification', 'message' => 'Welcome to game.'),
+            [],
+            [$connection->WAMP->sessionId]
+        );
+
         if ($notifications) {
             $messages = array();
             foreach ($notifications as $notification) {

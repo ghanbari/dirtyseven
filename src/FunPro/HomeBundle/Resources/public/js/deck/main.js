@@ -8,17 +8,31 @@ socket.on('socket/connect', function(sess) {
     connection_status = 'connected';
 
     $('a[href*=create_game]').removeClass('disabled');
-    messenger.write('Successfully Connected');
+    messenger.notification({'message': 'Successfully Connected', 'from': 'Bot'});
     changeStatus('connected');
 
     session.subscribe('chat/public', function(uri, payload) {
-        messenger.write(payload);
+        if (typeof payload != 'object') {
+            return;
+        }
+
+        switch (payload.type) {
+            case 'notification':
+                messenger.notification(payload);
+                break;
+            case 'game_invitation':
+                messenger.gameInvitation(payload);
+                break;
+            case 'friend_request':
+                messenger.friendRequest(payload);
+                break;
+        }
     });
 });
 
 socket.on('socket/disconnect', function (error) {
     connection_status = 'disconnected';
-    messenger.write(error.reason);
+    messenger.notification({'message': error.reason, 'from': 'Bot'});
     $('a[href*=create_game]').addClass('disabled');
     changeStatus('disconnected');
 });

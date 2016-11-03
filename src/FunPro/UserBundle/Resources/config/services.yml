@@ -11,6 +11,30 @@ services:
 
     fun_pro_user.user_rpc:
         class: FunPro\UserBundle\RPC\UserService
-        arguments: ["@gos_web_socket.wamp.topic_manager", "@gos_web_socket.websocket.client_manipulator", "@snc_redis.default", "@doctrine"]
+        arguments:
+            - "@gos_web_socket.wamp.topic_manager"
+            - "@gos_web_socket.websocket.client_manipulator"
+            - "@snc_redis.default"
+            - "@doctrine"
         tags:
             - { name: gos_web_socket.rpc }
+
+    fun_pro_user.friend_rpc:
+        class: FunPro\UserBundle\RPC\FriendService
+        arguments:
+            - "@gos_web_socket.wamp.topic_manager"
+            - "@gos_web_socket.websocket.client_manipulator"
+            - "@snc_redis.default"
+            - "@doctrine"
+            - "@fun_pro_user.friend"
+            - "@fun_pro_user.blacklist"
+        tags:
+            - { name: gos_web_socket.rpc }
+
+    fun_pro_user.friend:
+        class: FunPro\UserBundle\Persistence\Friend
+        arguments: ["@snc_redis.default", "@doctrine"]
+
+    fun_pro_user.blacklist:
+        class: FunPro\UserBundle\Persistence\Blacklist
+        arguments: ["@snc_redis.default", "@doctrine"]
