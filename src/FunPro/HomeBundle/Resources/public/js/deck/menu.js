@@ -29,50 +29,6 @@ $(document).ready(function (event) {
     //    );
     //});
 
-    $('form#send-friend-request').submit(function(event) {
-        event.preventDefault();
-        var username = $('input#friend-username').val();
-        $('input#friend-username').val('');
-
-        session.call('friend/send_friend_request_to_username', {'username': username}).then(
-            function(result) {
-                if (result.status.code == 1 || result.status.code == 10) {
-                    $('.friend-requests').loadTemplate(
-                        $("#friend-request"),
-                        {username: username},
-                        { prepend: true }
-                    );
-                }
-                messenger.notification({'from': 'Bot', 'message': result.status.message});
-                $('#friend-request').modal('hide');
-                $('#count-of-friend-request').text(result.data.count);
-
-                if (result.status.code == -6) {
-                    messenger.notification({from: 'Bot', message: 'You must remove a user from list.'});
-                }
-            },
-            function(error, desc) {
-                console.log("RPC Error", error, desc);
-            }
-        );
-    });
-
-    $('.friend-requests').on('click', '.cancel-friend-request', function (event) {
-        var root = $(this).parent().parent();
-        var username = root.find('span').text();
-        session.call('user/cancel_friend_request', {'username': username}).then(
-            function (result) {
-                if (result.status.code == 1 || result.status.code == -1) {
-                    $(root).remove();
-                }
-                messenger.notification({'from': 'Bot', 'message': result.status.message});
-            },
-            function (error, desc) {
-                console.log("RPC Error", error, desc);
-            }
-        );
-    });
-
     //$('button#invite').click(function(event) {
     //    event.preventDefault();
     //    var username = $('input#invite_player').val();

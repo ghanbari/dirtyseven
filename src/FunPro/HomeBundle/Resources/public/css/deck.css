@@ -193,6 +193,8 @@ hr:last-child {
     display: none;
 }
 
-.friend-request > .dropdown-menu {
+.friend-requests .dropdown-menu,
+.friend-suggests .dropdown-menu,
+.friends-list .dropdown-menu {
     padding: 0.3rem;
 }

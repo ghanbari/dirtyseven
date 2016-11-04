@@ -19,7 +19,7 @@ var messenger = {
 
         $('#messeges *').remove();
         $("#messeges").loadTemplate(
-            $("#message-game-invitation"),
+            $("#messenger-game-invitation"),
             {
                 gameId: payload.gameId,
                 from: payload.from,
@@ -28,27 +28,11 @@ var messenger = {
         );
         this.playSound();
     },
-    friendRequest: function (payload) {
-        new Notification(payload.from, {
-            icon: '/web/images/icon.png',
-            body: payload.message
-        });
-
-        $('#messeges *').remove();
-        $("#messeges").loadTemplate(
-            $("#message-friend-invitation"),
-            {
-                from: payload.from,
-                message: payload.message
-            }
-        );
-        this.playSound();
-    },
     notification: function (payload) {
         that = this;
-        $('#messeges > :not(.message-notification)').remove();
+        $('#messeges > :not(.messenger-notification)').remove();
         $("#messeges").loadTemplate(
-            $("#message-notification"),
+            $("#messenger-notification"),
             {
                 author: payload.from,
                 message: payload.message
@@ -56,14 +40,14 @@ var messenger = {
             {
                 prepend: true,
                 success: function () {
-                    $('#messeges > .message-notification:nth-of-type(3)').remove();
+                    $('#messeges > .messenger-notification:nth-of-type(3)').remove();
                     that.playSound();
                 }
             }
         );
 
         $("#messages-archive").loadTemplate(
-            $("#message-notification"),
+            $("#messenger-notification"),
             {
                 author: payload.from,
                 message: payload.message
@@ -76,22 +60,6 @@ var messenger = {
         audio.play();
     }
 };
-
-$('#messeges').on('click', '.message-friend-invitation > button', function(event) {
-    var result = $(this).hasClass('btn-success') ? true : false;
-    var username = $(this).parent().find('.message>strong').text();
-
-    session.call('user/answer_to_friend_request', {answer: result, username: username}).then(
-        function(result) {
-            if (result.status.code == 1 && result) {
-                //TODO: add to friends list
-            }
-            messenger.notification({from: 'Bot', message: result.status.message});
-        }, function(error, desc) {
-            messenger.notification(error);
-        }
-    );
-});
 
 //$('#messeges').on('click', '.game_invitation > button', function(event) {
 //    var result = $(this).hasClass('btn-success') ? true : false;

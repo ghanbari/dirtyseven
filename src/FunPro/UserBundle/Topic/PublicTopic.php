@@ -2,10 +2,11 @@
 
 namespace FunPro\UserBundle\Topic;
 
+use FunPro\UserBundle\Persistence\Inbox;
+use FunPro\UserBundle\Security\Core\User\UserManager;
 use Gos\Bundle\WebSocketBundle\Client\ClientManipulatorInterface;
 use Gos\Bundle\WebSocketBundle\Router\WampRequest;
 use Gos\Bundle\WebSocketBundle\Topic\TopicInterface;
-use Predis\Client;
 use Ratchet\ConnectionInterface;
 use Ratchet\Wamp\Topic;
 use Ratchet\Wamp\TopicManager;
@@ -31,21 +32,31 @@ class PublicTopic implements TopicInterface
     private $clientManipulator;
 
     /**
-     * @var Client
+     * @var Inbox
      */
-    private $redis;
+    private $inbox;
+
+    /**
+     * @var UserManager
+     */
+    private $userManager;
 
     /**
      * @param TopicManager               $topicManager
      * @param ClientManipulatorInterface $clientManipulator
-     * @param Client                     $redis
+     * @param Inbox                      $inbox
+     * @param UserManager                $userManager
      */
-    public function __construct(TopicManager $topicManager, ClientManipulatorInterface $clientManipulator, Client $redis)
-    {
-
+    public function __construct(
+        TopicManager $topicManager,
+        ClientManipulatorInterface $clientManipulator,
+        Inbox $inbox,
+        UserManager $userManager
+    ) {
         $this->topicManager = $topicManager;
         $this->clientManipulator = $clientManipulator;
-        $this->redis = $redis;
+        $this->inbox = $inbox;
+        $this->userManager = $userManager;
     }
 
     /**
@@ -55,9 +66,11 @@ class PublicTopic implements TopicInterface
      */
     public function onSubscribe(ConnectionInterface $connection, Topic $topic, WampRequest $request)
     {
-        $user = $this->clientManipulator->getClient($connection);
-        $this->redis->ltrim('Inbox:' . $user->getUsername(), 0, 100);
-        $notifications = $this->redis->lrange('Inbox:' . $user->getUsername(), 0, -1);
+        if (!$user = $this->userManager->getCurrentUser($connection)) {
+            return;
+        }
+
+        $notifications = $this->inbox->getAll($user->getUsername());
         $topic->broadcast(
             array('from' => 'Bot', 'type' => 'notification', 'message' => 'Welcome to game.'),
             [],
@@ -72,10 +85,10 @@ class PublicTopic implements TopicInterface
             $topic->broadcast($messages, [], [$connection->WAMP->sessionId]);
         }
 
-        if ($data = $this->hasActiveGame($user)) {
-            $message = array('gameId' => $data['id'], 'type' => 'resume', 'gameStatus' => $data['game']['status']);
-            $topic->broadcast($message, [], [$connection->WAMP->sessionId]);
-        }
+//        if ($data = $this->hasActiveGame($user)) {
+//            $message = array('gameId' => $data['id'], 'type' => 'resume', 'gameStatus' => $data['game']['status']);
+//            $topic->broadcast($message, [], [$connection->WAMP->sessionId]);
+//        }
     }
 
     /**
@@ -109,27 +122,27 @@ class PublicTopic implements TopicInterface
         return 'chat.public';
     }
 
-    private function hasActiveGame(UserInterface $user)
-    {
-        $gameId = $this->redis->hget('Users:Games', $user->getUsername());
-
-        if (!$gameId) {
-            return;
-        }
-
-        $game = $this->redis->hgetall("Games:$gameId");
-
-        if (!$game or $game['status'] == 'closed') {
-            $this->redis->hdel('Users:Games', $user->getUsername());
-            return;
-        }
-
-        $gameTopic = $this->topicManager->getTopic("games/$gameId");
-        if (!$gameTopic->count()) {
-            return array(
-                'id' => $gameId,
-                'game' => $game,
-            );
-        }
-    }
+//    private function hasActiveGame(UserInterface $user)
+//    {
+//        $gameId = $this->redis->hget('Users:Games', $user->getUsername());
+//
+//        if (!$gameId) {
+//            return;
+//        }
+//
+//        $game = $this->redis->hgetall("Games:$gameId");
+//
+//        if (!$game or $game['status'] == 'closed') {
+//            $this->redis->hdel('Users:Games', $user->getUsername());
+//            return;
+//        }
+//
+//        $gameTopic = $this->topicManager->getTopic("games/$gameId");
+//        if (!$gameTopic->count()) {
+//            return array(
+//                'id' => $gameId,
+//                'game' => $game,
+//            );
+//        }
+//    }
 }

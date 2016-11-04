@@ -52,14 +52,7 @@
                     </div>
                     <div class="modal-body">
                         <div class="container-fluid">
-                            <div class="row">
-                                <div class="col-md-3 col-sm-6">
-                                    <button type="button" class="transparent" data-toggle="dropdown"><span class="fa fa-close"></span></button>
-                                    <a href="#chat-room:mohammad">Mohammad</a>
-                                    <div class="dropdown-menu">
-                                        <a class="dropdown-item" href="#">Remove from list?</a>
-                                    </div>
-                                </div>
+                            <div class="row friends-list">
                             </div>
                         </div>
                     </div>
@@ -82,22 +75,7 @@
                     </div>
                     <div class="modal-body">
                         <div class="container-fluid">
-                            <div class="row">
-                                <div class="col-md-3 col-sm-6">
-                                    <div class="dropdown inline">
-                                        <button type="button" class="transparent" data-toggle="dropdown"><span class="fa fa-check"></span></button>
-                                        <div class="dropdown-menu">
-                                            <a class="dropdown-item" href="#">Confirm friend request?</a>
-                                        </div>
-                                    </div>
-                                    <div class="dropdown inline">
-                                        <button type="button" class="transparent" data-toggle="dropdown"><span class="fa fa-close"></span></button>
-                                        <div class="dropdown-menu">
-                                            <a class="dropdown-item" href="#">Reject friend request?</a>
-                                        </div>
-                                    </div>
-                                    <span>Mohammad</span>
-                                </div>
+                            <div class="row friend-suggests">
                             </div>
                         </div>
                     </div>
@@ -178,18 +156,18 @@
         </div>
     </div>
 </div>
-<script type="text/html" id="message-notification">
-    <p class="message-notification"><span class="message-author" data-content="author"></span>: <span class="message" data-content="message"></span></p>
+<script type="text/html" id="messenger-notification">
+    <p class="messenger-notification"><span class="message-author" data-content="author"></span>: <span class="message" data-content="message"></span></p>
 </script>
-<script type="text/html" id="message-game-invitation">
-    <div class="message-game-invitation messenger_invitation" data-id="gameId">
+<script type="text/html" id="messenger-game-invitation">
+    <div class="messenger-game-invitation messenger_invitation" data-id="gameId">
         <button class="btn btn-success btn-sm">Accept</button>
         <button class="btn btn-danger btn-sm">Decline</button>
         <div class="message"><strong data-content="from"></strong> invite from you to play <span data-content="gameType"></span></div>
     </div>
 </script>
-<script type="text/html" id="message-friend-invitation">
-    <div class="message-friend-invitation messenger_invitation">
+<script type="text/html" id="messenger-friend-invitation">
+    <div class="messenger-friend-invitation messenger_invitation" data-template-bind='[{"attribute": "data-username", "value": "from"}]'>
         <button class="btn btn-success btn-sm">Accept</button>
         <button class="btn btn-danger btn-sm">Decline</button>
         <div class="message"><strong data-content="from"></strong> <span data-content="message"></span></div>
@@ -202,12 +180,39 @@
         {#<td class="col-md-3"><button title="remove" class="btn btn-danger btn-sm cancel_invitation"><span class="fa fa-close"></span></button></td>#}
     {#</tr>#}
 {#</script>#}
+<script type="text/html" id="friend-suggest">
+    <div class="col-md-3 col-sm-6 friend-suggest" data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
+        <div class="dropdown inline">
+            <button type="button" class="transparent" data-toggle="dropdown"><span class="fa fa-check"></span></button>
+            <div class="dropdown-menu">
+                <button class="btn btn-success btn-sm answer-friend-suggest" type="button">Confirm friend request?</button>
+            </div>
+        </div>
+        <div class="dropdown inline">
+            <button type="button" class="transparent" data-toggle="dropdown"><span class="fa fa-close"></span></button>
+            <div class="dropdown-menu">
+                <button class="btn btn-danger btn-sm answer-friend-suggest" type="button">Reject friend request?</button>
+            </div>
+        </div>
+        <span data-content="username"></span>
+    </div>
+</script>
 <script type="text/html" id="friend-request">
-    <div class="col-md-3 col-sm-6 friend-request">
+    <div class="col-md-3 col-sm-6 friend-request" data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
         <button type="button" class="transparent" data-toggle="dropdown"><span class="fa fa-close"></span></button>
         <span data-content="username"></span>
         <div class="dropdown-menu">
             <button class="btn btn-danger btn-sm cancel-friend-request" type="button">Cancel friend request?</button>
+        </div>
+    </div>
+</script>
+<script type="text/html" id="friend-list-item">
+    <div class="col-md-3 col-sm-6 friend-list-item" data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
+        <button type="button" class="transparent" data-toggle="dropdown"><span class="fa fa-close"></span></button>
+        <span data-content="username"></span>
+        {#<a href="#chat-room:mohammad">Mohammad</a>#}
+        <div class="dropdown-menu">
+            <button class="btn btn-danger btn-sm remove-friend" type="button">Remove from list?</button>
         </div>
     </div>
 </script>
@@ -218,5 +223,6 @@
 <script src="{{ asset('bundles/funprohome/js/deck/main.js') }}"></script>
 <script src="{{ asset('bundles/funprohome/js/deck/messenger.js') }}"></script>
 <script src="{{ asset('bundles/funprohome/js/deck/menu.js') }}"></script>
+<script src="{{ asset('bundles/funprohome/js/deck/friend.js') }}"></script>
 </body>
 </html>

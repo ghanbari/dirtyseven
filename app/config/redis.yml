@@ -7,3 +7,4 @@ snc_redis:
             logging: %kernel.debug%
     session:
         client: default
+        ttl: 2592000

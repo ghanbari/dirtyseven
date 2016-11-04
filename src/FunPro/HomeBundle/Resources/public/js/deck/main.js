@@ -1,6 +1,17 @@
 var connection_status = 'disconnected';
 var session;
 
+function deleteAllCookies() {
+    var cookies = document.cookie.split(";");
+
+    for (var i = 0; i < cookies.length; i++) {
+        var cookie = cookies[i];
+        var eqPos = cookie.indexOf("=");
+        var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    }
+}
+
 var socket = WS.connect('ws://dirtyseven.ir:8080');
 
 socket.on('socket/connect', function(sess) {
@@ -12,8 +23,10 @@ socket.on('socket/connect', function(sess) {
     changeStatus('connected');
 
     session.subscribe('chat/public', function(uri, payload) {
-        if (typeof payload != 'object') {
-            return;
+        if (payload.constructor.toString().indexOf("Array") > -1) {
+            $.each(payload, function (index, value) {
+                messenger.notification(value);
+            });
         }
 
         switch (payload.type) {
@@ -23,8 +36,18 @@ socket.on('socket/connect', function(sess) {
             case 'game_invitation':
                 messenger.gameInvitation(payload);
                 break;
-            case 'friend_request':
-                messenger.friendRequest(payload);
+            case 'friend_invitation':
+                $(document).triggerHandler('friend_invitation', payload);
+                break;
+            case 'remove_friend':
+                $(document).triggerHandler('remove_friend', payload);
+                break;
+            case 'answer_to_friend_invitation':
+                $(document).triggerHandler('answer_to_friend_invitation', payload);
+                break;
+            case 'session':
+                deleteAllCookies();
+                document.location.reload();
                 break;
         }
     });
