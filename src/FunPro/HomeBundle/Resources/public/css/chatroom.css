@@ -7,10 +7,7 @@
 
 .chat-room {
     display: flex;
-}
-
-.chat-window {
-    align-self: flex-end;
+    align-items: flex-end;
 }
 
 #chat-room .chat-info div[class*="col"],
