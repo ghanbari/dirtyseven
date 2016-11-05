@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/bootstrap/dist/css/bootstrap.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/deck.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/chatroom.css') }}">
     <link rel="stylesheet" media="screen and (orientation:portrait)" type="text/css" href="{{ asset('bundles/funprouser/css/portrait.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/font-awesome/css/font-awesome.css') }}">
 </head>
@@ -147,6 +148,62 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                         <button id="startGame" type="button" class="btn btn-primary">Start</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="chat-room">
+        <div class="container-fluid">
+            <div class="row chat-room">
+                <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3 chat-window" id="chat-room-1">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="row chat-window-control">
+                                <div class="col-xs-10">
+                                    <div class="row chat-info">
+                                        <div class="col-xs-2 avatar"><img class="img-fluid rounded-circle" src="{{ asset('images/boy.png') }}"></div>
+                                        <div class="col-xs-10 username">Mohammad</div>
+                                    </div>
+                                </div>
+                                <div class="col-xs-2 chat-control">
+                                    <div class="row">
+                                        <div class="col-xs-6"><a class="close" data-toggle="collapse" href="#chat-content"><span class="fa fa-minus"></span></a></div>
+                                        <div class="col-xs-6"><a class="close"><span class="fa fa-close"></span></a></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-block collapse" id="chat-content">
+                            <div class="row message message-send">
+                                <div class="col-xs-2">
+                                    <img class="img-fluid rounded-circle avatar" src="{{ asset('images/boy.png') }}">
+                                </div>
+                                <div class="col-xs-10 message-text">
+                                    <p>salam salam salam salam salam salam salam salam salam salam </p>
+                                    <p>salam</p>
+                                    <p>salam</p>
+                                </div>
+                            </div>
+                            <div class="row message message-receive">
+                                <div class="col-xs-10 message-text">
+                                    <p>salam salam salam salam salam salam salam salam salam salam </p>
+                                    <p>salam</p>
+                                    <p>salam</p>
+                                </div>
+                                <div class="col-xs-2">
+                                    <img class="img-fluid rounded-circle avatar" src="{{ asset('images/boy.png') }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="input-group">
+                                <input type="text" placeholder="Write Your message here" class="form-control" />
+                                <span class="input-group-btn">
+                                    <button class="btn btn-primary" type="button"><span class="fa fa-telegram"></span></button>
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

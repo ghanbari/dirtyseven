@@ -18,6 +18,7 @@
   "dependencies": {
     "bootstrap": "4",
     "font-awesome": "fontawesome#^4.7.0",
-    "jquery-load-template": "https://github.com/codepb/jquery-template.git#^1.5.10"
+    "jquery-load-template": "https://github.com/codepb/jquery-template.git#^1.5.10",
+    "tether": "https://github.com/HubSpot/tether"
   }
 }

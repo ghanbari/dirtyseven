@@ -1,0 +1,94 @@
+#chat-room {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+}
+
+.chat-room {
+    display: flex;
+}
+
+.chat-window {
+    align-self: flex-end;
+}
+
+#chat-room .chat-info div[class*="col"],
+#chat-room .chat-control div[class*="col"] {
+    padding: 0.3rem;
+}
+
+#chat-room .card {
+    margin-bottom: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+#chat-room .card-header {
+    padding-bottom: 0px;
+}
+
+#chat-room .avatar {
+    margin-top: -5px;
+}
+
+#chat-room .message-send,
+#chat-room .message-receive {
+    position: relative;
+    margin-bottom: 8px;
+}
+
+#chat-room .message-send div[class*="col"] {
+    padding-right: 5px;
+    padding-left: 0;
+}
+
+#chat-room .message-send .message-text::before {
+    content: " ";
+    position: absolute;
+    top: 20%;
+    left: 0;
+    padding: 0;
+    margin-top: -5px;
+    margin-left: -10px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent rgba(0,0,0,.2) transparent transparent;
+}
+
+#chat-room .message-text {
+    background-color: #f7f7f7;
+    border: 1px solid rgba(0,0,0,.2);
+    border-radius: 0.3rem;
+    min-height: 3rem;
+}
+
+#chat-room .message-send .message-text p {
+    padding-right: 8px;
+    padding-left: 8px;
+    margin-bottom: 0;
+}
+
+#chat-room .message-receive div[class*="col"] {
+    padding-left: 5px;
+    padding-right: 0;
+}
+
+#chat-room .message-receive .message-text::before {
+    content: " ";
+    position: absolute;
+    top: 20%;
+    right: 0;
+    padding: 0;
+    margin-top: -5px;
+    margin-right: -10px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent transparent rgba(0,0,0,.2);
+}
+
+#chat-room .message-receive .message-text p {
+    padding-right: 8px;
+    padding-left: 8px;
+    margin-bottom: 0;
+}
