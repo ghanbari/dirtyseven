@@ -38,6 +38,8 @@ class Inbox
             $this->redis->ltrim("Inbox:$username", 1, 0);
         }
 
+        $result = $result ? array_reverse($result) : $result;
+
         return $result;
     }
 }
