@@ -34,7 +34,7 @@ socket.on('socket/connect', function(sess) {
                 messenger.notification(payload);
                 break;
             case 'game_invitation':
-                messenger.gameInvitation(payload);
+                //messenger.gameInvitation(payload);
                 break;
             case 'friend_invitation':
                 $(document).triggerHandler('friend_invitation', payload);
@@ -48,6 +48,9 @@ socket.on('socket/connect', function(sess) {
             case 'session':
                 deleteAllCookies();
                 document.location.reload();
+                break;
+            case 'friend_status':
+                $('.friends-list').trigger('friend_status', payload);
                 break;
         }
     });

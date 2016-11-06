@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/bootstrap/dist/css/bootstrap.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/deck.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/menu.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/messenger.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/friend.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/chatroom.css') }}">
     <link rel="stylesheet" media="screen and (orientation:portrait)" type="text/css" href="{{ asset('bundles/funprouser/css/portrait.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/font-awesome/css/font-awesome.css') }}">
@@ -237,48 +240,20 @@
     {#</tr>#}
 {#</script>#}
 <script type="text/html" id="friend-suggest">
-    {#<div class="col-md-3 col-sm-6 friend-suggest" data-template-bind='[{"attribute": "data-username", "value": "username"}]'>#}
-        {#<div class="dropdown inline">#}
-            {#<button type="button" class="transparent" data-toggle="dropdown"><span class="fa fa-check"></span></button>#}
-            {#<div class="dropdown-menu">#}
-                {#<button class="btn btn-success btn-sm answer-friend-suggest" type="button">Confirm friend request?</button>#}
-            {#</div>#}
-        {#</div>#}
-        {#<div class="dropdown inline">#}
-            {#<button type="button" class="transparent" data-toggle="dropdown"><span class="fa fa-close"></span></button>#}
-            {#<div class="dropdown-menu">#}
-                {#<button class="btn btn-danger btn-sm answer-friend-suggest" type="button">Reject friend request?</button>#}
-            {#</div>#}
-        {#</div>#}
-        {#<span data-content="username"></span>#}
-    {#</div>#}
-
     <div class="card text-xs-center friend-suggest" data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
-        <div class="card-block">
-            <h4 class="card-title" data-content="username"></h4>
-        </div>
-        <img src="{{ asset('images/boy.png') }}" alt="username">
+        <img class="avatar card-img-top" src="{{ asset('images/boy.png') }}" alt="username">
         <div class="card-block dropup">
+            <h4 class="card-title" data-content="username"></h4>
             <button type="button" class="btn btn-success answer-friend-suggest"><span class="fa fa-check"></span></button>
             <button type="button" class="btn btn-danger answer-friend-suggest"><span class="fa fa-close"></span></button>
         </div>
     </div>
 </script>
 <script type="text/html" id="friend-request">
-    {#<div class="col-md-3 col-sm-6 friend-request" data-template-bind='[{"attribute": "data-username", "value": "username"}]'>#}
-        {#<button type="button" class="transparent" data-toggle="dropdown"><span class="fa fa-close"></span></button>#}
-        {#<span data-content="username"></span>#}
-        {#<div class="dropdown-menu">#}
-            {#<button class="btn btn-danger btn-sm cancel-friend-request" type="button">Cancel friend request?</button>#}
-        {#</div>#}
-    {#</div>#}
-
     <div class="card text-xs-center friend-request" data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
-        <div class="card-block">
-            <h4 class="card-title" data-content="username"></h4>
-        </div>
-        <img src="{{ asset('images/boy.png') }}" alt="username">
+        <img class="avatar card-img-top" src="{{ asset('images/boy.png') }}" alt="username">
         <div class="card-block dropup">
+            <h4 class="card-title" data-content="username"></h4>
             <button type="button" class="btn btn-danger" data-toggle="dropdown"><span class="fa fa-close"></span></button>
             <div class="dropdown-menu">
                 <button class="btn btn-danger btn-sm cancel-friend-request" type="button">Cancel friend request?</button>
@@ -287,21 +262,11 @@
     </div>
 </script>
 <script type="text/html" id="friend-list-item">
-    {#<div class="col-md-3 col-sm-6 friend-list-item" data-template-bind='[{"attribute": "data-username", "value": "username"}]'>#}
-        {#<button type="button" class="transparent" data-toggle="dropdown"><span class="fa fa-close"></span></button>#}
-        {#<span data-content="username"></span>#}
-        {#&#123;&#35;<a href="#chat-room:mohammad">Mohammad</a>&#35;&#125;#}
-        {#<div class="dropdown-menu">#}
-            {#<button class="btn btn-danger btn-sm remove-friend" type="button">Remove from list?</button>#}
-        {#</div>#}
-    {#</div>#}
-
     <div class="card text-xs-center friend-list-item" data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
-        <div class="card-block">
-            <h4 class="card-title" data-content="username"></h4>
-        </div>
-        <img src="{{ asset('images/boy.png') }}" alt="username">
+        <div class="status-area"><span class="fa fa-circle status" data-class="status"></span></div>
+        <img class="avatar card-img-top" src="{{ asset('images/boy.png') }}" alt="username">
         <div class="card-block dropup">
+            <h4 class="card-title" data-content="username"></h4>
             <button type="button" class="btn btn-primary"><span class="fa fa-comments"></span></button>
             <button type="button" class="btn btn-danger" data-toggle="dropdown"><span class="fa fa-close"></span></button>
             <div class="dropdown-menu">
@@ -315,6 +280,7 @@
 <script src="{{ asset('assets/jquery-load-template/dist/jquery.loadTemplate.js') }}"></script>
 {{ ws_client() }}
 <script src="{{ asset('bundles/funprohome/js/deck/main.js') }}"></script>
+<script src="{{ asset('bundles/funprohome/js/deck/avatar.js') }}"></script>
 <script src="{{ asset('bundles/funprohome/js/deck/messenger.js') }}"></script>
 <script src="{{ asset('bundles/funprohome/js/deck/menu.js') }}"></script>
 <script src="{{ asset('bundles/funprohome/js/deck/friend.js') }}"></script>

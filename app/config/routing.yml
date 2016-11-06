@@ -2,6 +2,10 @@ fun_pro_home_res:
     resource: "@FunProHomeBundle/Resources/config/routing.yml"
     type:     rest
 
+fun_pro_user_res:
+    resource: "@FunProUserBundle/Resources/config/routing.yml"
+    prefix:   "/user"
+
 oauth_yahoo_login:
     path:     /connect/check-yahoo
 

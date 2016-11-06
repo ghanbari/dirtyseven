@@ -1,12 +1,12 @@
 <?php
 
-namespace FunPro\UserBundle\Persistence;
+namespace FunPro\UserBundle\Manager;
 
 use Doctrine\Bundle\DoctrineBundle\Registry;
 use Predis\Client;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-class Blacklist
+class BlacklistManager
 {
     /**
      * @var Client

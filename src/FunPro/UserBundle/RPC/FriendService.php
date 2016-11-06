@@ -2,11 +2,11 @@
 
 namespace FunPro\UserBundle\RPC;
 
-use FunPro\UserBundle\Persistence\Blacklist;
-use FunPro\UserBundle\Persistence\Friend;
-use FunPro\UserBundle\Persistence\Inbox;
-use FunPro\UserBundle\Persistence\User as UserHelper;
-use FunPro\UserBundle\Security\Core\User\UserManager;
+use FunPro\UserBundle\Client\ClientHelper;
+use FunPro\UserBundle\Manager\BlacklistManager;
+use FunPro\UserBundle\Manager\FriendManager;
+use FunPro\UserBundle\Manager\InboxManager;
+use FunPro\UserBundle\Manager\UserManager;
 use Gos\Bundle\WebSocketBundle\Router\WampRequest;
 use Gos\Bundle\WebSocketBundle\RPC\RpcInterface;
 use Ratchet\ConnectionInterface;
@@ -20,24 +20,19 @@ class FriendService implements RpcInterface
     private $topicManager;
 
     /**
-     * @var Friend
+     * @var FriendManager
      */
-    private $friendService;
+    private $friendManager;
 
     /**
-     * @var Blacklist
+     * @var BlacklistManager
      */
-    private $blacklist;
+    private $blacklistManager;
 
     /**
-     * @var Inbox
+     * @var InboxManager
      */
-    private $inbox;
-
-    /**
-     * @var UserHelper
-     */
-    private $user;
+    private $inboxManager;
 
     /**
      * @var UserManager
@@ -45,27 +40,32 @@ class FriendService implements RpcInterface
     private $userManager;
 
     /**
-     * @param TopicManager $topicManager
-     * @param Friend       $friendService
-     * @param Blacklist    $blacklist
-     * @param Inbox        $inbox
-     * @param UserHelper   $user
-     * @param UserManager  $userManager
+     * @var ClientHelper
+     */
+    private $clientHelper;
+
+    /**
+     * @param TopicManager     $topicManager
+     * @param FriendManager    $friendManager
+     * @param BlacklistManager $blacklistManager
+     * @param InboxManager     $inboxManager
+     * @param UserManager      $userManager
+     * @param ClientHelper     $clientHelper
      */
     public function __construct(
         TopicManager $topicManager,
-        Friend $friendService,
-        Blacklist $blacklist,
-        Inbox $inbox,
-        UserHelper $user,
-        UserManager $userManager
+        FriendManager $friendManager,
+        BlacklistManager $blacklistManager,
+        InboxManager $inboxManager,
+        UserManager $userManager,
+        ClientHelper $clientHelper
     ) {
         $this->topicManager = $topicManager;
-        $this->friendService = $friendService;
-        $this->blacklist = $blacklist;
-        $this->inbox = $inbox;
-        $this->user = $user;
+        $this->friendManager = $friendManager;
+        $this->blacklistManager = $blacklistManager;
+        $this->inboxManager = $inboxManager;
         $this->userManager = $userManager;
+        $this->clientHelper = $clientHelper;
     }
 
     /**
@@ -79,7 +79,7 @@ class FriendService implements RpcInterface
     public function sendFriendRequestToUsername(ConnectionInterface $connection, WampRequest $request, $params)
     {
         $friendUsername = $params['username'];
-        if (!$user = $this->userManager->getCurrentUser($connection)) {
+        if (!$user = $this->clientHelper->getCurrentUser($connection)) {
             return;
         }
 
@@ -90,7 +90,7 @@ class FriendService implements RpcInterface
             );
         }
 
-        $friend = $this->user->findUser($friendUsername);
+        $friend = $this->userManager->findUser($friendUsername);
         if (!$friend) {
             return array(
                 'status' => array('message' => 'User is not exists.', 'code' => -2),
@@ -98,32 +98,32 @@ class FriendService implements RpcInterface
             );
         }
 
-        if ($this->blacklist->isBlocked($user->getUsername(), $friendUsername)) {
+        if ($this->blacklistManager->isBlocked($user->getUsername(), $friendUsername)) {
             return array(
                 'status' => array('message' => 'You are blocked by user or you blocked his', 'code' => -3),
                 'data' => array(),
             );
         }
 
-        if ($this->friendService->isFriend($user->getUsername(), $friendUsername)) {
+        if ($this->friendManager->isFriend($user->getUsername(), $friendUsername)) {
             return array(
                 'status' => array('message' => 'You are friends', 'code' => -4),
                 'data' => array(),
             );
         }
 
-        if ($this->friendService->hasRequestFrom($user->getUsername(), $friendUsername)) {
+        if ($this->friendManager->hasRequestFrom($user->getUsername(), $friendUsername)) {
             return $this->addFriend($user->getUsername(), $friendUsername, true);
         }
 
-        if ($this->friendService->hasRequestFrom($friendUsername, $user->getUsername())) {
+        if ($this->friendManager->hasRequestFrom($friendUsername, $user->getUsername())) {
             return array(
                 'status' => array('message' => 'You send request in the past', 'code' => -5),
                 'data' => array(),
             );
         }
 
-        $countOfRequest = $this->friendService->countOfRequests($user->getUsername());
+        $countOfRequest = $this->friendManager->countOfRequests($user->getUsername());
         if ($countOfRequest > 50) {
             return array(
                 'status' => array('message' => 'You can only send 50 friend request.', 'code' => -6),
@@ -131,10 +131,10 @@ class FriendService implements RpcInterface
             );
         }
 
-        $this->friendService->saveRequest($user->getUsername(), $friendUsername);
+        $this->friendManager->saveRequest($user->getUsername(), $friendUsername);
 
         $publicTopic = $this->topicManager->getTopic('chat/public');
-        $friendConnection = $this->userManager->getConnection($friendUsername);
+        $friendConnection = $this->clientHelper->getConnection($friendUsername);
         if ($friendConnection) {
             $message = array(
                 'from' => $user->getUsername(),
@@ -148,7 +148,7 @@ class FriendService implements RpcInterface
                 array($friendConnection->WAMP->sessionId)
             );
         } else {
-            $this->inbox->add($friendUsername, $user->getUsername(), 'I would like add you to friend list');
+            $this->inboxManager->add($friendUsername, $user->getUsername(), 'I would like add you to friend list');
         }
 
         return array(
@@ -160,21 +160,21 @@ class FriendService implements RpcInterface
     public function cancelFriendRequest(ConnectionInterface $connection, WampRequest $request, $params)
     {
         $friendUsername = $params['username'];
-        if (!$user = $this->userManager->getCurrentUser($connection)) {
+        if (!$user = $this->clientHelper->getCurrentUser($connection)) {
             return;
         }
 
-        if (!$this->friendService->hasRequestFrom($friendUsername, $user->getUsername())) {
+        if (!$this->friendManager->hasRequestFrom($friendUsername, $user->getUsername())) {
             return array(
                 'status' => array('message' => 'You did removed this request before', 'code' => -1),
                 'data' => array(),
             );
         }
 
-        $this->friendService->removeRequest($user->getUsername(), $friendUsername);
+        $this->friendManager->removeRequest($user->getUsername(), $friendUsername);
 
         $publicTopic = $this->topicManager->getTopic('chat/public');
-        $friendConnection = $this->userManager->getConnection($friendUsername);
+        $friendConnection = $this->clientHelper->getConnection($friendUsername);
         if ($friendConnection) {
             $message = array(
                 'from' => $user->getUsername(),
@@ -188,7 +188,7 @@ class FriendService implements RpcInterface
                 array($friendConnection->WAMP->sessionId)
             );
         } else {
-            $this->inbox->add($friendUsername, $user->getUsername(), 'Sorry, I write wrong username.');
+            $this->inboxManager->add($friendUsername, $user->getUsername(), 'Sorry, I write wrong username.');
         }
 
         return array(
@@ -200,13 +200,13 @@ class FriendService implements RpcInterface
     private function addFriend($username, $friendUsername, $answer=true)
     {
         if ($answer) {
-            $this->friendService->addFriend($username, $friendUsername);
+            $this->friendManager->addFriend($username, $friendUsername);
         }
 
-        $this->friendService->removeRequest($friendUsername, $username);
+        $this->friendManager->removeRequest($friendUsername, $username);
 
         $publicTopic = $this->topicManager->getTopic('chat/public');
-        $friendConnection = $this->userManager->getConnection($friendUsername);
+        $friendConnection = $this->clientHelper->getConnection($friendUsername);
         if ($friendConnection) {
             $message = array(
                 'from' => $username,
@@ -221,7 +221,7 @@ class FriendService implements RpcInterface
             );
         } else {
             if ($answer) {
-                $this->inbox->add($friendUsername, $username, 'I accept your request');
+                $this->inboxManager->add($friendUsername, $username, 'I accept your request');
             }
         }
 
@@ -235,11 +235,11 @@ class FriendService implements RpcInterface
     public function answerToFriendRequest(ConnectionInterface $connection, WampRequest $request, $params)
     {
         $friendUsername = $params['username'];
-        if (!$user = $this->userManager->getCurrentUser($connection)) {
+        if (!$user = $this->clientHelper->getCurrentUser($connection)) {
             return;
         }
 
-        if (!$this->friendService->hasRequestFrom($user->getUsername(), $friendUsername)) {
+        if (!$this->friendManager->hasRequestFrom($user->getUsername(), $friendUsername)) {
             return array(
                 'status' => array('message' => 'Your invitation was removed by ' . $friendUsername, 'code' => -1),
                 'data' => array(),
@@ -259,21 +259,21 @@ class FriendService implements RpcInterface
             return;
         }
 
-        if (!$user = $this->userManager->getCurrentUser($connection)) {
+        if (!$user = $this->clientHelper->getCurrentUser($connection)) {
             return;
         }
 
-        if (!$this->friendService->isFriend($user->getUsername(), $params['username'])) {
+        if (!$this->friendManager->isFriend($user->getUsername(), $params['username'])) {
             return array(
                 'status' => array('message' => 'You are not friends', 'code' => -1),
                 'data' => array(),
             );
         }
 
-        $this->friendService->removeFriend($user->getUsername(), $params['username']);
+        $this->friendManager->removeFriend($user->getUsername(), $params['username']);
 
         $publicTopic = $this->topicManager->getTopic('chat/public');
-        $friendConnection = $this->userManager->getConnection($params['username']);
+        $friendConnection = $this->clientHelper->getConnection($params['username']);
         if ($friendConnection) {
             $message = array(
                 'from' => $user->getUsername(),
@@ -286,7 +286,7 @@ class FriendService implements RpcInterface
                 array($friendConnection->WAMP->sessionId)
             );
         } else {
-            $this->inbox->add($params['username'], $user->getUsername(), 'Sorry, I remove you from your friend list');
+            $this->inboxManager->add($params['username'], $user->getUsername(), 'Sorry, I remove you from your friend list');
         }
 
         return array(
@@ -297,11 +297,11 @@ class FriendService implements RpcInterface
 
     public function friendRequests(ConnectionInterface $connection, WampRequest $request, $params)
     {
-        if (!$user = $this->userManager->getCurrentUser($connection)) {
+        if (!$user = $this->clientHelper->getCurrentUser($connection)) {
             return;
         }
 
-        $requests = $this->friendService->getRequests($user->getUsername());
+        $requests = $this->friendManager->getRequests($user->getUsername());
 
         return array(
             'status' => array('message' => 'OK', 'code' => 1),
@@ -311,11 +311,11 @@ class FriendService implements RpcInterface
 
     public function friendSuggests(ConnectionInterface $connection, WampRequest $request, $params)
     {
-        if (!$user = $this->userManager->getCurrentUser($connection)) {
+        if (!$user = $this->clientHelper->getCurrentUser($connection)) {
             return;
         }
 
-        $suggests = $this->friendService->getSuggests($user->getUsername());
+        $suggests = $this->friendManager->getSuggests($user->getUsername());
 
         return array(
             'status' => array('message' => 'OK', 'code' => 1),
@@ -325,11 +325,11 @@ class FriendService implements RpcInterface
 
     public function friends(ConnectionInterface $connection, WampRequest $request, $params)
     {
-        if (!$user = $this->userManager->getCurrentUser($connection)) {
+        if (!$user = $this->clientHelper->getCurrentUser($connection)) {
             return;
         }
 
-        $friends = $this->friendService->getFriends($user->getUsername());
+        $friends = $this->friendManager->getFriendsStatus($user->getUsername());
 
         return array(
             'status' => array('message' => 'OK', 'code' => 1),
@@ -339,13 +339,13 @@ class FriendService implements RpcInterface
 
     public function friendsAndInvitations(ConnectionInterface $connection, WampRequest $request, $params)
     {
-        if (!$user = $this->userManager->getCurrentUser($connection)) {
+        if (!$user = $this->clientHelper->getCurrentUser($connection)) {
             return;
         }
 
-        $requests = $this->friendService->getRequests($user->getUsername());
-        $suggests = $this->friendService->getSuggests($user->getUsername());
-        $friends = $this->friendService->getFriends($user->getUsername());
+        $requests = $this->friendManager->getRequests($user->getUsername());
+        $suggests = $this->friendManager->getSuggests($user->getUsername());
+        $friends = $this->friendManager->getFriendsStatus($user->getUsername());
 
         return array(
             'status' => array('message' => 'OK', 'code' => 1),

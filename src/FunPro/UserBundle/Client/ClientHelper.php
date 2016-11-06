@@ -1,13 +1,13 @@
 <?php
 
-namespace FunPro\UserBundle\Security\Core\User;
+namespace FunPro\UserBundle\Client;
 
 use Gos\Bundle\WebSocketBundle\Client\ClientManipulator;
 use Ratchet\ConnectionInterface;
 use Ratchet\Wamp\TopicManager;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-class UserManager
+class ClientHelper
 {
     /**
      * @var ClientManipulator
@@ -29,13 +29,16 @@ class UserManager
         $this->topicManager = $topicManager;
     }
 
+    public  function getPublicTopic()
+    {
+        return $this->topicManager->getTopic('chat/public');
+    }
+
     public function getCurrentUser(ConnectionInterface $connection)
     {
-        $publicTopic = $this->topicManager->getTopic('chat/public');
         $user = $this->clientManipulator->getClient($connection);
-
         if (!$user instanceof UserInterface) {
-            $publicTopic->broadcast(
+            $this->getPublicTopic()->broadcast(
                 array('type' => 'session'),
                 [],
                 [$connection->WAMP->sessionId]
@@ -49,24 +52,43 @@ class UserManager
 
     public function getUser($username)
     {
-        $publicTopic = $this->topicManager->getTopic('chat/public');
-        $user = $this->clientManipulator->findByUsername($publicTopic, $username);
+        return $this->clientManipulator->findByUsername($this->getPublicTopic(), $username);
+    }
 
-        return $user;
+    public function getUsers(array $usernames)
+    {
+        $users = array();
+        foreach ($usernames as $username) {
+            $user = $this->getUser($username);
+            if ($user) {
+                $users[] = $user;
+            }
+        }
+
+        return $users;
+    }
+
+    public function getUsersSessionId(array $usernames)
+    {
+        $sessionIds = array();
+        foreach ($usernames as $username) {
+            if ($userConnection = $this->getConnection($username)) {
+                $sessionIds[] = $userConnection->WAMP->sessionId;
+            }
+        }
+        return $sessionIds;
     }
 
     public function getClient($username)
     {
-        $publicTopic = $this->topicManager->getTopic('chat/public');
-        $user = $this->clientManipulator->findByUsername($publicTopic, $username);
+        $user = $this->getUser($username);
 
         return $user ? $user['client'] : null;
     }
 
     public function getConnection($username)
     {
-        $publicTopic = $this->topicManager->getTopic('chat/public');
-        $user = $this->clientManipulator->findByUsername($publicTopic, $username);
+        $user = $this->getUser($username);
 
         return $user ? $user['connection'] : null;
     }

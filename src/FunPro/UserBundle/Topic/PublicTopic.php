@@ -2,15 +2,14 @@
 
 namespace FunPro\UserBundle\Topic;
 
-use FunPro\UserBundle\Persistence\Inbox;
-use FunPro\UserBundle\Security\Core\User\UserManager;
+use FunPro\UserBundle\Client\ClientHelper;
+use FunPro\UserBundle\Manager\InboxManager;
 use Gos\Bundle\WebSocketBundle\Client\ClientManipulatorInterface;
 use Gos\Bundle\WebSocketBundle\Router\WampRequest;
 use Gos\Bundle\WebSocketBundle\Topic\TopicInterface;
 use Ratchet\ConnectionInterface;
 use Ratchet\Wamp\Topic;
 use Ratchet\Wamp\TopicManager;
-use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * Use only for system notification & message.
@@ -32,31 +31,31 @@ class PublicTopic implements TopicInterface
     private $clientManipulator;
 
     /**
-     * @var Inbox
+     * @var InboxManager
      */
-    private $inbox;
+    private $inboxManager;
 
     /**
-     * @var UserManager
+     * @var ClientHelper
      */
-    private $userManager;
+    private $clientHelper;
 
     /**
      * @param TopicManager               $topicManager
      * @param ClientManipulatorInterface $clientManipulator
-     * @param Inbox                      $inbox
-     * @param UserManager                $userManager
+     * @param InboxManager               $inboxManager
+     * @param ClientHelper               $clientHelper
      */
     public function __construct(
         TopicManager $topicManager,
         ClientManipulatorInterface $clientManipulator,
-        Inbox $inbox,
-        UserManager $userManager
+        InboxManager $inboxManager,
+        ClientHelper $clientHelper
     ) {
         $this->topicManager = $topicManager;
         $this->clientManipulator = $clientManipulator;
-        $this->inbox = $inbox;
-        $this->userManager = $userManager;
+        $this->inboxManager = $inboxManager;
+        $this->clientHelper = $clientHelper;
     }
 
     /**
@@ -66,11 +65,11 @@ class PublicTopic implements TopicInterface
      */
     public function onSubscribe(ConnectionInterface $connection, Topic $topic, WampRequest $request)
     {
-        if (!$user = $this->userManager->getCurrentUser($connection)) {
+        if (!$user = $this->clientHelper->getCurrentUser($connection)) {
             return;
         }
 
-        $notifications = $this->inbox->getAll($user->getUsername());
+        $notifications = $this->inboxManager->getAll($user->getUsername());
         $topic->broadcast(
             array('from' => 'Bot', 'type' => 'notification', 'message' => 'Welcome to game.'),
             [],

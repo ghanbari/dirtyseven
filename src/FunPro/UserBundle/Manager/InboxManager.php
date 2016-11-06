@@ -1,10 +1,10 @@
 <?php
 
-namespace FunPro\UserBundle\Persistence;
+namespace FunPro\UserBundle\Manager;
 
 use Predis\Client;
 
-class Inbox
+class InboxManager
 {
     /**
      * @var Client

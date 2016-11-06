@@ -3,13 +3,23 @@ services:
         class:     FunPro\UserBundle\Security\Core\OAuth\UserProvider
         parent:    hwi_oauth.user.provider.fosub_bridge
 
+    fun_pro.user.status:
+        class: FunPro\UserBundle\Listener\UserStatusListener
+        arguments:
+            - "@gos_web_socket.wamp.topic_manager"
+            - "@fun_pro_user.client_helper"
+            - "@fun_pro_user.manager.friend"
+            - "@fun_pro_user.manager.user"
+        tags:
+            - { name: kernel.event_subscriber }
+
     fun_pro_user.chat.public:
         class: FunPro\UserBundle\Topic\PublicTopic
         arguments:
             - "@gos_web_socket.wamp.topic_manager"
             - "@gos_web_socket.websocket.client_manipulator"
-            - "@fun_pro_user.inbox"
-            - "@fun_pro_user.user_manager"
+            - "@fun_pro_user.manager.inbox"
+            - "@fun_pro_user.client_helper"
         tags:
             - { name: gos_web_socket.topic }
 
@@ -27,30 +37,30 @@ services:
         class: FunPro\UserBundle\RPC\FriendService
         arguments:
             - "@gos_web_socket.wamp.topic_manager"
-            - "@fun_pro_user.friend"
-            - "@fun_pro_user.blacklist"
-            - "@fun_pro_user.inbox"
-            - "@fun_pro_user.user"
-            - "@fun_pro_user.user_manager"
+            - "@fun_pro_user.manager.friend"
+            - "@fun_pro_user.manager.blacklist"
+            - "@fun_pro_user.manager.inbox"
+            - "@fun_pro_user.manager.user"
+            - "@fun_pro_user.client_helper"
         tags:
             - { name: gos_web_socket.rpc }
 
-    fun_pro_user.friend:
-        class: FunPro\UserBundle\Persistence\Friend
-        arguments: ["@snc_redis.default", "@doctrine", "@fun_pro_user.inbox"]
+    fun_pro_user.manager.friend:
+        class: FunPro\UserBundle\Manager\FriendManager
+        arguments: ["@snc_redis.default", "@doctrine", "@fun_pro_user.manager.inbox"]
 
-    fun_pro_user.blacklist:
-        class: FunPro\UserBundle\Persistence\Blacklist
+    fun_pro_user.manager.blacklist:
+        class: FunPro\UserBundle\Manager\BlacklistManager
         arguments: ["@snc_redis.default", "@doctrine"]
 
-    fun_pro_user.inbox:
-        class: FunPro\UserBundle\Persistence\Inbox
+    fun_pro_user.manager.inbox:
+        class: FunPro\UserBundle\Manager\InboxManager
         arguments: ["@snc_redis.default"]
 
-    fun_pro_user.user:
-        class: FunPro\UserBundle\Persistence\User
+    fun_pro_user.manager.user:
+        class: FunPro\UserBundle\Manager\UserManager
         arguments: ["@snc_redis.default", "@doctrine"]
 
-    fun_pro_user.user_manager:
-        class: FunPro\UserBundle\Security\Core\User\UserManager
+    fun_pro_user.client_helper:
+        class: FunPro\UserBundle\Client\ClientHelper
         arguments: ["@gos_web_socket.websocket.client_manipulator", "@gos_web_socket.wamp.topic_manager"]

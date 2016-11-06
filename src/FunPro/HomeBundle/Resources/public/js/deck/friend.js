@@ -2,8 +2,8 @@ socket.on('socket/connect', function (session) {
     session.call('friend/friends_and_invitations').then(
         function (result) {
             //load friends list
-            $.each(result.data.friends, function (index, friend) {
-                addToFriendList(friend);
+            $.each(result.data.friends, function (friend, status) {
+                addToFriendList(friend, status);
             });
 
             //load suggests list
@@ -15,6 +15,7 @@ socket.on('socket/connect', function (session) {
             $.each(result.data.requests, function (index, request) {
                 addToRequestList(request);
             });
+            avatars.sync();
         },
         function(error, desc) {
             messenger.notification({from: 'Bot', message: 'Sorry, a error occur, if it occur again, please report to us.'});
@@ -28,6 +29,7 @@ function sendAnswerToFriendInvitation(username, answer) {
         function(result) {
             if (result.status.code == 10 && answer) {
                 addToFriendList(username);
+                avatars.sync();
             }
 
             removeFromSuggestList(username);
@@ -39,11 +41,16 @@ function sendAnswerToFriendInvitation(username, answer) {
     );
 }
 
-function addToFriendList(username) {
+function addToFriendList(username, status) {
     $('.friends-list').loadTemplate(
         $('#friend-list-item'),
-        {username: username},
-        {prepend: true}
+        {username: username, status: status},
+        {
+            prepend: true,
+            success: function () {
+                avatars.add(username, '.friend-list-item .avatar', 200);
+            }
+        }
     );
 }
 
@@ -55,7 +62,12 @@ function addToSuggestList(username) {
     $('.friend-suggests').loadTemplate(
         $("#friend-suggest"),
         {username: username},
-        {prepend: true}
+        {
+            prepend: true,
+            success: function () {
+                avatars.add(username, '.friend-suggest .avatar', 200);
+            }
+        }
     );
 }
 
@@ -67,13 +79,27 @@ function addToRequestList(username) {
     $('.friend-requests').loadTemplate(
         $("#friend-request"),
         {username: username},
-        {prepend: true}
+        {
+            prepend: true,
+            success: function () {
+                avatars.add(username, '.friend-request .avatar', 200);
+            }
+        }
     );
 }
 
 function removeFromRequestList(username) {
     $('.friend-request[data-username="' + username + '"]').remove();
     $('#count-of-friend-request').text($('#count-of-friend-request').text() - 1);
+}
+
+function changeFriendStatus(username, status) {
+    $('.friend-list-item[data-username="' + username + '"] .status')
+        .removeClass('online')
+        .removeClass('offline')
+        .removeClass('playing')
+        .removeClass('waiting');
+    $('.friend-list-item[data-username="' + username + '"] .status').addClass(status);
 }
 
 // send a friend invitation
@@ -86,9 +112,11 @@ $('form#send-friend-request').submit(function(event) {
         function(result) {
             if (result.status.code == 1) {
                 addToRequestList(username);
+                avatars.sync();
             } else if (result.status.code == 10) {//users is friends
                 removeFromRequestList(username);
                 addToFriendList(username);
+                avatars.sync();
             }
 
             messenger.notification({'from': 'Bot', 'message': result.status.message});
@@ -141,6 +169,7 @@ $(document).on('friend_invitation', function (event, payload) {
 
         //show in suggests
         addToSuggestList(payload.from);
+        avatars.sync();
     } else {
         removeFromSuggestList(payload.from);
         messenger.notification(payload);
@@ -150,6 +179,7 @@ $(document).on('friend_invitation', function (event, payload) {
 $(document).on('answer_to_friend_invitation', function (event, payload) {
     if (payload.answer == true) {
         addToFriendList(payload.from);
+        avatars.sync();
     }
 
     removeFromRequestList(payload.from);
@@ -192,4 +222,8 @@ $('#friends-list').on('click', '.remove-friend', function (event) {
             messenger.notification({from: 'Bot', message: error + ', ' + desc});
         }
     );
+});
+
+$('.friends-list').on('friend_status', function (event, payload) {
+    changeFriendStatus(payload.username, payload.status);
 });

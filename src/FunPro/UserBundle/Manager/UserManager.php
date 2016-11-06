@@ -1,12 +1,12 @@
 <?php
 
-namespace FunPro\UserBundle\Persistence;
+namespace FunPro\UserBundle\Manager;
 
 use Doctrine\Bundle\DoctrineBundle\Registry;
 use Predis\Client;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-class User
+class UserManager
 {
     /**
      * @var Client
@@ -27,5 +27,10 @@ class User
     public function findUser($username)
     {
         return $this->doctrine->getRepository('FunProUserBundle:User')->findOneByUsername($username);
+    }
+
+    public function updateStatus($username, $status)
+    {
+        return $this->redis->hset('Users:Status', $username, $status);
     }
 }

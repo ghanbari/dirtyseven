@@ -1,12 +1,13 @@
 <?php
 
-namespace FunPro\UserBundle\Persistence;
+namespace FunPro\UserBundle\Manager;
 
 use Doctrine\Bundle\DoctrineBundle\Registry;
+use FunPro\UserBundle\Entity\User;
 use Predis\Client;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-class Friend
+class FriendManager
 {
     /**
      * @var Client
@@ -72,6 +73,17 @@ class Friend
     public function getFriends($username)
     {
         return $this->redis->smembers("Friends:$username");
+    }
+
+    public function getFriendsStatus($username)
+    {
+        $friends = $this->getFriends($username);
+        $status = $this->redis->hmget('Users:Status', $friends);
+        $result = array();
+        for ($i = 0; $i < count($friends); $i++) {
+            $result[$friends[$i]] = $status[$i] ?: User::STATUS_OFFLINE;
+        }
+        return $result;
     }
 
     public function isFriend($username, $otherUsername)
