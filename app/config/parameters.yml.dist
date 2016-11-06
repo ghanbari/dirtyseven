@@ -34,3 +34,4 @@ parameters:
         - 1.0.0
     api.version.supported_till:
         1.0.0: '2016-05-05'
+    snc_redis.session.locking: false

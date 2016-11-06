@@ -1,3 +1,6 @@
+!/web/avatars
+/web/avatars/*
+!/web/avatars/.gitkeep
 /web/assets
 /app/config/parameters.yml
 /build/

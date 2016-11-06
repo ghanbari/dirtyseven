@@ -27,6 +27,8 @@ class AppKernel extends Kernel
             new FunPro\UserBundle\FunProUserBundle(),
             new FunPro\HomeBundle\FunProHomeBundle(),
             new Snc\RedisBundle\SncRedisBundle(),
+            new Vich\UploaderBundle\VichUploaderBundle(),
+            new Liip\ImagineBundle\LiipImagineBundle(),
         ];
 
         if (in_array($this->getEnvironment(), ['dev', 'test'], true)) {
