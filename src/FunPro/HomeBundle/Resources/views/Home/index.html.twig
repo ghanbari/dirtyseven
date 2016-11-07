@@ -156,61 +156,9 @@
             </div>
         </div>
     </div>
-    <div id="chat-room">
+    <div id="chat-room-container">
         <div class="container-fluid">
             <div class="row chat-room">
-                <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3 chat-window" id="chat-room-1">
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="row chat-window-control">
-                                <div class="col-xs-10">
-                                    <div class="row chat-info">
-                                        <div class="col-xs-2 avatar"><img class="img-fluid rounded-circle" src="{{ asset('images/boy.png') }}"></div>
-                                        <div class="col-xs-10 username">Mohammad</div>
-                                    </div>
-                                </div>
-                                <div class="col-xs-2 chat-control">
-                                    <div class="row">
-                                        <div class="col-xs-6"><a class="close" data-toggle="collapse" href="#chat-content"><span class="fa fa-minus"></span></a></div>
-                                        <div class="col-xs-6"><a class="close"><span class="fa fa-close"></span></a></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="collapse" id="chat-content">
-                            <div class="card-block">
-                                <div class="row message message-send">
-                                    <div class="col-xs-2">
-                                        <img class="img-fluid rounded-circle avatar" src="{{ asset('images/boy.png') }}">
-                                    </div>
-                                    <div class="col-xs-10 message-text">
-                                        <p>salam salam salam salam salam salam salam salam salam salam </p>
-                                        <p>salam</p>
-                                        <p>salam</p>
-                                    </div>
-                                </div>
-                                <div class="row message message-receive">
-                                    <div class="col-xs-10 message-text">
-                                        <p>salam salam salam salam salam salam salam salam salam salam </p>
-                                        <p>salam</p>
-                                        <p>salam</p>
-                                    </div>
-                                    <div class="col-xs-2">
-                                        <img class="img-fluid rounded-circle avatar" src="{{ asset('images/boy.png') }}">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-footer">
-                                <div class="input-group">
-                                    <input type="text" placeholder="Write Your message here" class="form-control" />
-                                <span class="input-group-btn">
-                                    <button class="btn btn-primary" type="button"><span class="fa fa-telegram"></span></button>
-                                </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -272,6 +220,65 @@
             <div class="dropdown-menu">
                 <button class="btn btn-danger btn-sm remove-friend" type="button">Remove from list?</button>
             </div>
+        </div>
+    </div>
+</script>
+<script type="text/html" id="chat-room">
+    <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3 chat-window" data-id="chat-id">
+        <div class="card">
+            <div class="card-header">
+                <div class="row chat-window-control">
+                    <div class="col-xs-10">
+                        <div class="row chat-info">
+                            <div class="col-xs-2 avatar"><img class="img-fluid rounded-circle" data-src="owner-avatar" src="{{ asset('images/boy.png') }}"></div>
+                            <div class="col-xs-10 username" data-content="owner-username"></div>
+                        </div>
+                    </div>
+                    <div class="col-xs-2 chat-control">
+                        <div class="row">
+                            <div class="col-xs-6"><a class="close" data-toggle="collapse" data-href="chat-content-id"><span class="fa fa-minus"></span></a></div>
+                            <div class="col-xs-6"><a class="close"><span class="fa fa-close"></span></a></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="collapse" id="chat-content">
+                <div class="card-block">
+                    {#messeger sender and reciver#}
+                </div>
+                <div class="card-footer">
+                    <div class="input-group">
+                        <input type="text" placeholder="Write Your message here" class="form-control" />
+                        <span class="input-group-btn">
+                            <button class="btn btn-primary" type="button"><span class="fa fa-telegram"></span></button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+<script type="text/html" id="message-send">
+    <div class="row message message-send">
+        <div class="col-xs-2">
+            <img class="img-fluid rounded-circle avatar" src="{{ asset('images/boy.png') }}">
+        </div>
+        <div class="col-xs-10 message-text">
+            {#<p>salam salam salam salam salam salam salam salam salam salam </p>#}
+            {#<p>salam</p>#}
+            {#<p>salam</p>#}
+        </div>
+    </div>
+</script>
+<script type="text/html" id="message-receive">
+    <div class="row message message-receive">
+        <div class="col-xs-10 message-text">
+            {#<p>salam salam salam salam salam salam salam salam salam salam </p>#}
+            {#<p>salam</p>#}
+            {#<p>salam</p>#}
+        </div>
+        <div class="col-xs-2">
+            <img class="img-fluid rounded-circle avatar" src="{{ asset('images/boy.png') }}">
         </div>
     </div>
 </script>
