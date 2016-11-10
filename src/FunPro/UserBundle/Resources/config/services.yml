@@ -23,13 +23,18 @@ services:
         tags:
             - { name: gos_web_socket.topic }
 
+    fun_pro_user.chat.private:
+        class: FunPro\UserBundle\Topic\ChatTopic
+        arguments: ["@fun_pro_user.client_helper", "@fun_pro_user.manager.friend", "@fun_pro_user.manager.communication"]
+        tags:
+            - { name: gos_web_socket.topic }
+
     fun_pro_user.user_rpc:
         class: FunPro\UserBundle\RPC\UserService
         arguments:
             - "@gos_web_socket.wamp.topic_manager"
-            - "@gos_web_socket.websocket.client_manipulator"
-            - "@snc_redis.default"
-            - "@doctrine"
+            - "@fun_pro_user.client_helper"
+            - "@fun_pro_user.manager.communication"
         tags:
             - { name: gos_web_socket.rpc }
 
@@ -47,7 +52,7 @@ services:
 
     fun_pro_user.manager.friend:
         class: FunPro\UserBundle\Manager\FriendManager
-        arguments: ["@snc_redis.default", "@doctrine", "@fun_pro_user.manager.inbox"]
+        arguments: ["@snc_redis.default", "@doctrine"]
 
     fun_pro_user.manager.blacklist:
         class: FunPro\UserBundle\Manager\BlacklistManager
@@ -59,6 +64,10 @@ services:
 
     fun_pro_user.manager.user:
         class: FunPro\UserBundle\Manager\UserManager
+        arguments: ["@snc_redis.default", "@doctrine"]
+
+    fun_pro_user.manager.communication:
+        class: FunPro\UserBundle\Manager\CommunicationManager
         arguments: ["@snc_redis.default", "@doctrine"]
 
     fun_pro_user.client_helper:

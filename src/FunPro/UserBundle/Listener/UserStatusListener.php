@@ -11,6 +11,7 @@ use Gos\Bundle\WebSocketBundle\Event\ClientErrorEvent;
 use Gos\Bundle\WebSocketBundle\Event\ServerEvent;
 use Gos\Bundle\WebSocketBundle\Event\ClientRejectedEvent;
 use Ratchet\Wamp\TopicManager;
+use React\Socket\ConnectionException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -69,10 +70,10 @@ class UserStatusListener implements EventSubscriberInterface
         $publicTopic = $this->topicManager->getTopic('chat/public');
         $user = $this->clientHelper->getCurrentUser($connection);
 
-        if ($event->getType() == ClientEvent::CONNECTED and !$user instanceof UserInterface) {
+        if ((!$user or !$user instanceof UserInterface)) {
             $publicTopic->broadcast(array('type' => 'session'), array(), array($connection->WAMP->sessionId));
             $connection->close();
-            return;
+            throw new ConnectionException();
         }
 
         $status = $event->getType() === ClientEvent::CONNECTED ? User::STATUS_ONLINE : User::STATUS_OFFLINE;
@@ -81,8 +82,10 @@ class UserStatusListener implements EventSubscriberInterface
         $friendsUsername = $this->friendManager->getFriends($user->getUsername());
         $sessionIds = $this->clientHelper->getUsersSessionId($friendsUsername);
 
-        $message = array('type' => 'friend_status', 'username' => $user->getUsername(), 'status' => $status);
-        $publicTopic->broadcast($message, array(), $sessionIds);
+        if (!empty($sessionIds)) {
+            $message = array('type' => 'friend_status', 'username' => $user->getUsername(), 'status' => $status);
+            $publicTopic->broadcast($message, array(), $sessionIds);
+        }
     }
 
     /**

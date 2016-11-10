@@ -5,6 +5,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+$(document).ready(function () {
+    $('#messages-archive').niceScroll();
+});
+
 var messenger = {
     gameInvitation: function (payload) {
         var now = new Date();

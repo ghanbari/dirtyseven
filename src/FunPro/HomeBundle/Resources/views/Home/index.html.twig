@@ -19,9 +19,9 @@
     <div class="deck">
         <div class="menu">
             <ul>
-                <li class="avatar" title="Online & Free">
+                <li title="Online & Free">
                     <span class="user-status fa fa-circle"></span>
-                    <img src="{{ asset('images/icon.png') }}" class="img-thumbnail img-fluid rounded-circle" />
+                    <img data-username="{{ app.user.username }}" src="{{ asset('images/38x38/default.png') }}" id="myAvatar" class="img-thumbnail img-fluid rounded-circle avatar" data-size="38">
                 </li>
                 <li><a href="#create_game" data-toggle="modal" class="disabled">New Game</a></li>
                 <li>
@@ -158,7 +158,7 @@
     </div>
     <div id="chat-room-container">
         <div class="container-fluid">
-            <div class="row chat-room">
+            <div class="row chat-rooms">
             </div>
         </div>
     </div>
@@ -189,7 +189,8 @@
 {#</script>#}
 <script type="text/html" id="friend-suggest">
     <div class="card text-xs-center friend-suggest" data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
-        <img class="avatar card-img-top" src="{{ asset('images/boy.png') }}" alt="username">
+        <img src="{{ asset('images/200x200/default.png') }}" class="avatar card-img-top" alt="username" data-size="200"
+             data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
         <div class="card-block dropup">
             <h4 class="card-title" data-content="username"></h4>
             <button type="button" class="btn btn-success answer-friend-suggest"><span class="fa fa-check"></span></button>
@@ -199,7 +200,8 @@
 </script>
 <script type="text/html" id="friend-request">
     <div class="card text-xs-center friend-request" data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
-        <img class="avatar card-img-top" src="{{ asset('images/boy.png') }}" alt="username">
+        <img src="{{ asset('images/200x200/default.png') }}" class="avatar card-img-top" alt="username" data-size="200"
+             data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
         <div class="card-block dropup">
             <h4 class="card-title" data-content="username"></h4>
             <button type="button" class="btn btn-danger" data-toggle="dropdown"><span class="fa fa-close"></span></button>
@@ -212,10 +214,11 @@
 <script type="text/html" id="friend-list-item">
     <div class="card text-xs-center friend-list-item" data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
         <div class="status-area"><span class="fa fa-circle status" data-class="status"></span></div>
-        <img class="avatar card-img-top" src="{{ asset('images/boy.png') }}" alt="username">
+        <img src="{{ asset('images/200x200/default.png') }}" class="avatar card-img-top" alt="username" data-size="200"
+             data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
         <div class="card-block dropup">
             <h4 class="card-title" data-content="username"></h4>
-            <button type="button" class="btn btn-primary"><span class="fa fa-comments"></span></button>
+            <button type="button" class="btn btn-primary open-chat-room"><span class="fa fa-comments"></span></button>
             <button type="button" class="btn btn-danger" data-toggle="dropdown"><span class="fa fa-close"></span></button>
             <div class="dropdown-menu">
                 <button class="btn btn-danger btn-sm remove-friend" type="button">Remove from list?</button>
@@ -224,72 +227,114 @@
     </div>
 </script>
 <script type="text/html" id="chat-room">
-    <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3 chat-window" data-id="chat-id">
+    <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3 collapse in chat-room" data-id="chat_room_id"
+         data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
         <div class="card">
             <div class="card-header">
                 <div class="row chat-window-control">
-                    <div class="col-xs-10">
+                    <div class="col-xs-9">
                         <div class="row chat-info">
-                            <div class="col-xs-2 avatar"><img class="img-fluid rounded-circle" data-src="owner-avatar" src="{{ asset('images/boy.png') }}"></div>
-                            <div class="col-xs-10 username" data-content="owner-username"></div>
+                            <div class="col-xs-2 avatar"><img src="{{ asset('images/200x200/default.png') }}" class="img-fluid rounded-circle avatar"
+                                data-size="200" data-template-bind='[{"attribute": "data-username", "value": "username"}]'></div>
+                            <div class="col-xs-10 username" data-content="username"></div>
                         </div>
                     </div>
-                    <div class="col-xs-2 chat-control">
+                    <div class="col-xs-3 chat-control">
                         <div class="row">
-                            <div class="col-xs-6"><a class="close" data-toggle="collapse" data-href="chat-content-id"><span class="fa fa-minus"></span></a></div>
-                            <div class="col-xs-6"><a class="close"><span class="fa fa-close"></span></a></div>
+                            <div class="col-xs-4"><span class="fa fa-circle status" data-class="user_status"></span></div>
+                            <div class="col-xs-4"><a class="close" data-toggle="collapse" data-href="link_to_chat_content"><span class="fa fa-plus min-max"></span></a></div>
+                            <div class="col-xs-4"><a class="close" data-toggle="collapse" data-href="link_to_chat_room"><span class="fa fa-close"></span></a></div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="collapse" id="chat-content">
+            <div class="collapse" data-id="chat_content_id">
                 <div class="card-block">
                     {#messeger sender and reciver#}
                 </div>
                 <div class="card-footer">
-                    <div class="input-group">
-                        <input type="text" placeholder="Write Your message here" class="form-control" />
-                        <span class="input-group-btn">
-                            <button class="btn btn-primary" type="button"><span class="fa fa-telegram"></span></button>
-                        </span>
-                    </div>
+                    <form class="chat-room-messenger">
+                        <div class="input-group">
+                            <input type="text" placeholder="Write Your message here" class="form-control chat-room-message" />
+                            <span class="input-group-btn">
+                                <button class="btn btn-primary" type="button"><span class="fa fa-telegram send-message"></span></button>
+                            </span>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 </script>
 <script type="text/html" id="message-send">
-    <div class="row message message-send">
+    <div class="row message message-send" data-template-bind='[{"attribute": "data-time", "value": "timestamp"}]'>
         <div class="col-xs-2">
-            <img class="img-fluid rounded-circle avatar" src="{{ asset('images/boy.png') }}">
+            <img class="img-fluid rounded-circle avatar" data-size="38" src="{{ asset('images/38x38/default.png') }}"
+                data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
         </div>
-        <div class="col-xs-10 message-text">
-            {#<p>salam salam salam salam salam salam salam salam salam salam </p>#}
-            {#<p>salam</p>#}
-            {#<p>salam</p>#}
+        <div class="col-xs-10 message-text" data-content-append="message">
+            <span class="send-at" data-content="time"></span>
         </div>
     </div>
 </script>
 <script type="text/html" id="message-receive">
-    <div class="row message message-receive">
-        <div class="col-xs-10 message-text">
-            {#<p>salam salam salam salam salam salam salam salam salam salam </p>#}
-            {#<p>salam</p>#}
-            {#<p>salam</p>#}
+    <div class="row message message-receive" data-template-bind='[{"attribute": "data-time", "value": "timestamp"}]'>
+        <div class="col-xs-10 message-text" data-content-append="message">
+            <span class="send-at" data-content="time"></span>
         </div>
-        <div class="col-xs-2">
-            <img class="img-fluid rounded-circle avatar" src="{{ asset('images/boy.png') }}">
+        <div class="col-xs-2" style="padding-left: 8px;">
+            <img class="img-fluid rounded-circle avatar" data-size="38" src="{{ asset('images/38x38/default.png') }}"
+                 data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
         </div>
     </div>
 </script>
+{% raw %}
+<script type="text/html" id="message-send-worker">
+    <div class="row message message-send" data-time="{{ timestamp }}">
+        <div class="col-xs-2">
+            <img class="img-fluid rounded-circle avatar" data-size="38" {% endraw %}src="{{ asset('images/38x38/default.png') }}"{% raw %} data-username="{{ username }}">
+        </div>
+        <div class="col-xs-10 message-text">
+            {{{ message }}}
+            <span class="send-at">{{ time }}</span>
+        </div>
+    </div>
+</script>
+<script type="text/html" id="message-receive-worker">
+    <div class="row message message-receive" data-time="{{ timestamp }}">
+        <div class="col-xs-10 message-text">
+            {{{ message }}}
+            <span class="send-at">{{ time }}</span>
+        </div>
+        <div class="col-xs-2" style="padding-left: 8px;">
+            <img class="img-fluid rounded-circle avatar" data-size="38" {% endraw %}src="{{ asset('images/38x38/default.png') }}"{% raw %} data-username="{{ username }}">
+        </div>
+    </div>
+</script>
+{% endraw %}
+<script src="{{ asset('assets/json2/json2.js') }}"></script>
 <script src="{{ asset('assets/jquery/dist/jquery.js') }}"></script>
 <script src="{{ asset('assets/bootstrap/dist/js/bootstrap.js') }}"></script>
 <script src="{{ asset('assets/jquery-load-template/dist/jquery.loadTemplate.js') }}"></script>
+<script src="{{ asset('assets/jquery.nicescroll/dist/jquery.nicescroll.min.js') }}"></script>
+<script src="{{ asset('assets/jStorage/jstorage.js') }}"></script>
+<script src="{{ asset('assets/js-php-unserialize/php-unserialize.js') }}"></script>
 {{ ws_client() }}
+<script src="{{ asset('bundles/funprohome/js/deck/messenger.js') }}"></script>
 <script src="{{ asset('bundles/funprohome/js/deck/main.js') }}"></script>
 <script src="{{ asset('bundles/funprohome/js/deck/avatar.js') }}"></script>
-<script src="{{ asset('bundles/funprohome/js/deck/messenger.js') }}"></script>
 <script src="{{ asset('bundles/funprohome/js/deck/menu.js') }}"></script>
 <script src="{{ asset('bundles/funprohome/js/deck/friend.js') }}"></script>
+<script src="{{ asset('bundles/funprohome/js/deck/chatroom.js') }}"></script>
+<script type="text/javascript">
+    if (!$.jStorage.storageAvailable()) {
+        alert('Local storage is not supported by your browser. Please disable "Private Mode", or upgrade to a modern browser.')
+    }
+
+    $(document).ready(function () {
+        $.jStorage.set('myUsername', '{{ app.user.username }}');
+        avatars.load();
+    })
+</script>
 </body>
 </html>

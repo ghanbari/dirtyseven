@@ -34,8 +34,9 @@
     border-bottom: 1px solid #ffffff;
 }
 
-.menu .avatar img {
+.menu #myAvatar {
     margin: 3px;
+    padding: 0.13rem;
 }
 
 .menu .user-status {

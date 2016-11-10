@@ -19,6 +19,10 @@
     "bootstrap": "4",
     "font-awesome": "fontawesome#^4.7.0",
     "jquery-load-template": "https://github.com/codepb/jquery-template.git#^1.5.10",
-    "tether": "https://github.com/HubSpot/tether"
+    "jquery.nicescroll": "^3.6.8",
+    "jStorage": "^0.4.12",
+    "json2": "*",
+    "js-php-unserialize": "https://github.com/naholyr/js-php-unserialize.git",
+    "mustache.js": "mustache#^2.3.0"
   }
 }

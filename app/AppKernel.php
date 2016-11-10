@@ -26,7 +26,6 @@ class AppKernel extends Kernel
             new HWI\Bundle\OAuthBundle\HWIOAuthBundle(),
             new FunPro\UserBundle\FunProUserBundle(),
             new FunPro\HomeBundle\FunProHomeBundle(),
-            new FunPro\CoreBundle\FunProCoreBundle(),
             new Snc\RedisBundle\SncRedisBundle(),
             new Vich\UploaderBundle\VichUploaderBundle(),
             new Liip\ImagineBundle\LiipImagineBundle(),

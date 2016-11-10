@@ -1,7 +1,6 @@
 imports:
     - { resource: "@FunProUserBundle/Resources/config/services.yml" }
     - { resource: "@FunProHomeBundle/Resources/config/services.yml" }
-    - { resource: "@FunProCoreBundle/Resources/config/services.yml" }
 
 #services:
 #    jms_serializer.naming_strategy:

@@ -5,6 +5,7 @@ namespace FunPro\UserBundle\Client;
 use Gos\Bundle\WebSocketBundle\Client\ClientManipulator;
 use Ratchet\ConnectionInterface;
 use Ratchet\Wamp\TopicManager;
+use React\Socket\ConnectionException;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 class ClientHelper
@@ -44,7 +45,8 @@ class ClientHelper
                 [$connection->WAMP->sessionId]
             );
 
-            return;
+            $connection->close();
+            throw new ConnectionException();
         }
 
         return $user;

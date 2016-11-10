@@ -1,46 +1,46 @@
-.chat-room-container {
+#chat-room-container {
     position: fixed;
     left: 0;
     bottom: 0;
     width: 100%;
 }
 
-.chat-room {
+.chat-rooms {
     display: flex;
     align-items: flex-end;
 }
 
-.chat-room .chat-info div[class*="col"],
-.chat-room .chat-control div[class*="col"] {
+.chat-rooms .chat-info div[class*="col"],
+.chat-rooms .chat-control div[class*="col"] {
     padding: 0.3rem;
 }
 
-.chat-room .card {
+.chat-rooms .card {
     margin-bottom: 0;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
 }
 
-.chat-room .card-header {
+.chat-rooms .card-header {
     padding-bottom: 0px;
 }
 
-.chat-room .avatar {
+.chat-rooms div.avatar {
     margin-top: -5px;
 }
 
-.chat-room .message-send,
-.chat-room .message-receive {
+.chat-rooms .message-send,
+.chat-rooms .message-receive {
     position: relative;
     margin-bottom: 8px;
 }
 
-.chat-room .message-send div[class*="col"] {
-    padding-right: 5px;
+.chat-rooms .message-send div[class*="col"] {
+    padding-right: 0px;
     padding-left: 0;
 }
 
-.chat-room .message-send .message-text::before {
+.chat-rooms .message-send .message-text::before {
     content: " ";
     position: absolute;
     top: 20%;
@@ -53,25 +53,26 @@
     border-color: transparent rgba(0,0,0,.2) transparent transparent;
 }
 
-.chat-room .message-text {
+.chat-rooms .message-text {
     background-color: #f7f7f7;
     border: 1px solid rgba(0,0,0,.2);
     border-radius: 0.3rem;
     min-height: 3rem;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 2px 4px 8px 0 rgba(0, 0, 0, 0.19);
 }
 
-.chat-room .message-send .message-text p {
+.chat-rooms .message-text p {
     padding-right: 8px;
     padding-left: 8px;
     margin-bottom: 0;
 }
 
-.chat-room .message-receive div[class*="col"] {
-    padding-left: 5px;
+.chat-rooms .message-receive div[class*="col"] {
+    padding-left: 0;
     padding-right: 0;
 }
 
-.chat-room .message-receive .message-text::before {
+.chat-rooms .message-receive .message-text::before {
     content: " ";
     position: absolute;
     top: 20%;
@@ -84,8 +85,20 @@
     border-color: transparent transparent transparent rgba(0,0,0,.2);
 }
 
-.chat-room .message-receive .message-text p {
-    padding-right: 8px;
-    padding-left: 8px;
-    margin-bottom: 0;
+.chat-rooms .card-block {
+    height: 280px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+.chat-rooms .message .message-text {
+    word-wrap: break-word;
+}
+
+.chat-rooms .message .send-at{
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    color: rgba(0, 0, 0, 0.3);
+    padding-right: 5px;
 }

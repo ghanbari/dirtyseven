@@ -78,6 +78,11 @@ class FriendManager
     public function getFriendsStatus($username)
     {
         $friends = $this->getFriends($username);
+
+        if (empty($friends)) {
+            return;
+        }
+
         $status = $this->redis->hmget('Users:Status', $friends);
         $result = array();
         for ($i = 0; $i < count($friends); $i++) {

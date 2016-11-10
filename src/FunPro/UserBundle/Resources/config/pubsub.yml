@@ -2,6 +2,13 @@ fun_pro.topic_public:
     channel: chat/public
     handler:
         callback: 'chat.public'
+fun_pro.topic_private:
+    channel: chatroom/{username}
+    handler:
+        callback: 'chat.private'
+    requirements:
+        username:
+            pattern: "[A-Za-z_-]"
 fun_pro.rpc_user:
     channel: user/{method}
     handler:
