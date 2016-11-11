@@ -1,8 +1,8 @@
-$(document).ready(function () {
-    userStatus = (function (){
-        var users = {};
+userStatus = (function (){
+    var users = {};
 
-        var updateStatus = function () {
+    var updateStatus = function () {
+        socket.on('socket/connect', function (session) {
             session.call('friend/friends').then(
                 function (result) {
                     $.each(result.data.friends, function (friend, status) {
@@ -19,41 +19,41 @@ $(document).ready(function () {
                     messenger.notification({from: 'Bot', message: error + ', ' + desc});
                 }
             );
-        };
+        });
+    };
 
-        var Status = function () {
-            updateStatus();
-            setTimeout(updateStatus, 180000);
-        };
+    var Status = function () {
+        updateStatus();
+        setTimeout(updateStatus, 180000);
+    };
 
-        Status.prototype.getStatus = function (username) {
-            return users.hasOwnProperty(username) ? users[username] : 'offline';
-        };
+    Status.prototype.getStatus = function (username) {
+        return users.hasOwnProperty(username) ? users[username] : 'offline';
+    };
 
-        Status.prototype.update = function (username, status) {
-            if (users.hasOwnProperty(username)) {
-                users[username] = status;
-                this.updateUI([username]);
-            }
-        };
+    Status.prototype.update = function (username, status) {
+        if (users.hasOwnProperty(username)) {
+            users[username] = status;
+            this.updateUI([username]);
+        }
+    };
 
-        Status.prototype.updateUI = function (usernames) {
-            usernames = usernames !== undefined ? usernames : Object.keys(users);
-            $.each(usernames, function (index, username) {
-                var nodes = $('span.user-status[data-username="' + username + '"');
-                $.each(nodes, function (index, node) {
-                    var oldStatus = $(node).data('status') ? $(node).data('status') : 'offline';
-                    $(node)
-                        .removeClass(oldStatus)
-                        .addClass(users[username])
-                        .data('status', users[username]);
-                });
+    Status.prototype.updateUI = function (usernames) {
+        usernames = usernames !== undefined ? usernames : Object.keys(users);
+        $.each(usernames, function (index, username) {
+            var nodes = $('span.user-status[data-username="' + username + '"');
+            $.each(nodes, function (index, node) {
+                var oldStatus = $(node).data('status') ? $(node).data('status') : 'offline';
+                $(node)
+                    .removeClass(oldStatus)
+                    .addClass(users[username])
+                    .data('status', users[username]);
             });
-        };
+        });
+    };
 
-        return new Status();
-    })();
-});
+    return new Status();
+})();
 
 $(document).on('DOMNodeInserted', function(e) {
     if ($(e.target).has('.user-status').length) {
