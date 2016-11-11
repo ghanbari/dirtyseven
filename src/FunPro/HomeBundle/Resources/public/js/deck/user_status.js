@@ -2,29 +2,27 @@ userStatus = (function (){
     var users = {};
 
     var updateStatus = function () {
-        socket.on('socket/connect', function (session) {
-            session.call('friend/friends').then(
-                function (result) {
-                    $.each(result.data.friends, function (friend, status) {
-                        if (users.hasOwnProperty(friend) && users[friend] == status) {
-                            return true;
-                        }
+        session.call('friend/friends').then(
+            function (result) {
+                $.each(result.data.friends, function (friend, status) {
+                    if (users.hasOwnProperty(friend) && users[friend] == status) {
+                        return true;
+                    }
 
-                        users[friend] = status;
-                        userStatus.updateUI([friend]);
-                    });
-                },
-                function(error, desc) {
-                    messenger.notification({from: 'Bot', message: 'Sorry, a error occur, if it occur again, please report to us.'});
-                    messenger.notification({from: 'Bot', message: error + ', ' + desc});
-                }
-            );
-        });
+                    users[friend] = status;
+                    userStatus.updateUI([friend]);
+                });
+            },
+            function(error, desc) {
+                messenger.notification({from: 'Bot', message: 'Sorry, a error occur, if it occur again, please report to us.'});
+                messenger.notification({from: 'Bot', message: error + ', ' + desc});
+            }
+        );
     };
 
     var Status = function () {
-        updateStatus();
-        setTimeout(updateStatus, 180000);
+        setTimeout(updateStatus, 3000);
+        setInterval(updateStatus, 180000);
     };
 
     Status.prototype.getStatus = function (username) {

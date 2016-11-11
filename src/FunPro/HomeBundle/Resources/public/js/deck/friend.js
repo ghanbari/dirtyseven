@@ -1,9 +1,71 @@
+var friends = (function () {
+    var friends = [];
+
+    var obj = function () {
+        var that = this;
+        socket.on('socket/connect', function (session) {
+            session.call('friend/friends_and_invitations').then(
+                function (result) {
+                    //load friends list
+                    $.each(result.data.friends, function (friend, status) {
+                        that.addToFriendList(friend);
+                    });
+
+                    //load suggests list
+                    $.each(result.data.suggests, function (index, suggest) {
+                        addToSuggestList(suggest);
+                    });
+
+                    //load requests list
+                    $.each(result.data.requests, function (index, request) {
+                        addToRequestList(request);
+                    });
+                },
+                function(error, desc) {
+                    messenger.notification({from: 'Bot', message: 'Sorry, a error occur, if it occur again, please report to us.'});
+                    messenger.notification({from: 'Bot', message: error + ', ' + desc});
+                }
+            );
+        });
+
+        socket.on('socket/disconnect', function(error) {
+            clearFriendList();
+            clearRequestList();
+            clearSuggestList();
+        });
+    };
+
+
+    obj.prototype.addToFriendList = function (username) {
+        friends.push(username);
+        $('.friends-list').loadTemplate(
+            $('#friend-list-item'),
+            {username: username},
+            {prepend: true}
+        );
+    };
+
+    obj.prototype.removeFromFriendList = function (username) {
+        var index = friends.indexOf(username);
+        if (index > -1) {
+            friends.slice(index, 1);
+        }
+        $('.friend-list-item[data-username="' + username + '"]').remove();
+    };
+
+    obj.prototype.getFriends = function () {
+        return friends;
+    };
+
+    return new obj();
+})();
+
 //accept or reject freind request
 function sendAnswerToFriendInvitation(username, answer) {
     session.call('friend/answer_to_friend_request', {answer: answer, username: username}).then(
         function(result) {
             if (result.status.code == 10 && answer) {
-                addToFriendList(username);
+                friends.addToFriendList(username);
             }
 
             removeFromSuggestList(username);
@@ -13,18 +75,6 @@ function sendAnswerToFriendInvitation(username, answer) {
             messenger.notification({from: 'Bot', message: error + ', ' + desc});
         }
     );
-}
-
-function addToFriendList(username) {
-    $('.friends-list').loadTemplate(
-        $('#friend-list-item'),
-        {username: username},
-        {prepend: true}
-    );
-}
-
-function removeFromFriendList(username) {
-    $('.friend-list-item[data-username="' + username + '"]').remove();
 }
 
 function clearFriendList() {
@@ -68,37 +118,6 @@ function clearRequestList() {
     $('#count-of-friend-request').text(0);
 }
 
-socket.on('socket/connect', function (session) {
-    session.call('friend/friends_and_invitations').then(
-        function (result) {
-            //load friends list
-            $.each(result.data.friends, function (friend, status) {
-                addToFriendList(friend);
-            });
-
-            //load suggests list
-            $.each(result.data.suggests, function (index, suggest) {
-                addToSuggestList(suggest);
-            });
-
-            //load requests list
-            $.each(result.data.requests, function (index, request) {
-                addToRequestList(request);
-            });
-        },
-        function(error, desc) {
-            messenger.notification({from: 'Bot', message: 'Sorry, a error occur, if it occur again, please report to us.'});
-            messenger.notification({from: 'Bot', message: error + ', ' + desc});
-        }
-    );
-});
-
-socket.on('socket/disconnect', function(error) {
-    clearFriendList();
-    clearRequestList();
-    clearSuggestList();
-});
-
 // send a friend invitation
 $('form#send-friend-request').submit(function(event) {
     event.preventDefault();
@@ -111,7 +130,7 @@ $('form#send-friend-request').submit(function(event) {
                 addToRequestList(username);
             } else if (result.status.code == 10) {//users is friends
                 removeFromRequestList(username);
-                addToFriendList(username);
+                friends.addToFriendList(username);
             }
 
             messenger.notification({'from': 'Bot', 'message': result.status.message});
@@ -172,7 +191,7 @@ $(document).on('friend_invitation', function (event, payload) {
 
 $(document).on('answer_to_friend_invitation', function (event, payload) {
     if (payload.answer == true) {
-        addToFriendList(payload.from);
+        friends.addToFriendList(payload.from);
     }
 
     removeFromRequestList(payload.from);
@@ -180,7 +199,7 @@ $(document).on('answer_to_friend_invitation', function (event, payload) {
 });
 
 $(document).on('remove_friend', function (event, payload) {
-    removeFromFriendList(payload.from);
+    friends.removeFromFriendList(payload.from);
     messenger.notification({from: payload.from, message: payload.message});
 });
 
@@ -206,7 +225,7 @@ $('#friends-list').on('click', '.remove-friend', function (event) {
     session.call('friend/removeFriend', {'username': username}).then(
         function (result) {
             if (result.status.code == 1) {
-                removeFromFriendList(username);
+                friends.removeFromFriendList(username);
             }
             messenger.notification({'from': 'Bot', 'message': result.status.message});
         },
