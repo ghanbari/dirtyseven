@@ -20,7 +20,7 @@
         <div class="menu">
             <ul>
                 <li title="Online & Free">
-                    <span class="user-status fa fa-circle"></span>
+                    <span class="fa fa-circle" id="my-status"></span>
                     <img data-username="{{ app.user.username }}" src="{{ asset('images/38x38/default.png') }}" id="myAvatar" class="img-thumbnail img-fluid rounded-circle avatar" data-size="38">
                 </li>
                 <li><a href="#create_game" data-toggle="modal" class="disabled">New Game</a></li>
@@ -213,7 +213,8 @@
 </script>
 <script type="text/html" id="friend-list-item">
     <div class="card text-xs-center friend-list-item" data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
-        <div class="status-area"><span class="fa fa-circle status" data-class="status"></span></div>
+        <div class="status-area"><span class="fa fa-circle user-status"
+            data-template-bind='[{"attribute": "data-username", "value": "username"}]'></span></div>
         <img src="{{ asset('images/200x200/default.png') }}" class="avatar card-img-top" alt="username" data-size="200"
              data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
         <div class="card-block dropup">
@@ -241,7 +242,8 @@
                     </div>
                     <div class="col-xs-3 chat-control">
                         <div class="row">
-                            <div class="col-xs-4"><span class="fa fa-circle status" data-class="user_status"></span></div>
+                            <div class="col-xs-4"><span class="fa fa-circle user-status"
+                                data-template-bind='[{"attribute": "data-username", "value": "username"}]'></span></div>
                             <div class="col-xs-4"><a class="close" data-toggle="collapse" data-href="link_to_chat_content"><span class="fa fa-plus min-max"></span></a></div>
                             <div class="col-xs-4"><a class="close" data-toggle="collapse" data-href="link_to_chat_room"><span class="fa fa-close"></span></a></div>
                         </div>
@@ -326,6 +328,7 @@
 <script src="{{ asset('bundles/funprohome/js/deck/menu.js') }}"></script>
 <script src="{{ asset('bundles/funprohome/js/deck/friend.js') }}"></script>
 <script src="{{ asset('bundles/funprohome/js/deck/chatroom.js') }}"></script>
+<script src="{{ asset('bundles/funprohome/js/deck/user_status.js') }}"></script>
 <script type="text/javascript">
     if (!$.jStorage.storageAvailable()) {
         alert('Local storage is not supported by your browser. Please disable "Private Mode", or upgrade to a modern browser.')

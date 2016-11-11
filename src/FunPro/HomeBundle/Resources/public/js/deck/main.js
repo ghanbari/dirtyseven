@@ -9,20 +9,8 @@ function deleteAllCookies() {
     }
 }
 
-function changeStatus(status) {
-    if (status == 'waiting') {
-        $('.user-status').css('color', 'yellow');
-        $('.user-status').parent().attr('title', 'Creating game');
-    } else if (status == 'playing') {
-        $('.user-status').css('color', 'red');
-        $('.user-status').parent().attr('title', 'Playing');
-    } else if (status == 'disconnected') {
-        $('.user-status').css('color', 'grey');
-        $('.user-status').parent().attr('title', 'Disconnected');
-    } else {
-        $('.user-status').css('color', 'green');
-        $('.user-status').parent().attr('title', 'Online & Free');
-    }
+function changeMyStatus(status) {
+    $('#my-status').addClass(status);
 }
 
 var socket = WS.connect('ws://dirtyseven.ir:8080');
@@ -32,7 +20,7 @@ socket.on('socket/connect', function(sess) {
     session = sess;
     $('a[href*=create_game]').removeClass('disabled');
     messenger.notification({'message': 'Successfully Connected', 'from': 'Bot'});
-    changeStatus('connected');
+    changeMyStatus('online');
 
     session.subscribe('chat/public', function(uri, payload) {
         if (payload.constructor.toString().indexOf("Array") > -1) {
@@ -71,5 +59,5 @@ socket.on('socket/connect', function(sess) {
 socket.on('socket/disconnect', function (error) {
     messenger.notification({'message': error.reason, 'from': 'Bot'});
     $('a[href*=create_game]').addClass('disabled');
-    changeStatus('disconnected');
+    changeMyStatus('offline');
 });

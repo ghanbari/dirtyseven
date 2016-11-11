@@ -4,7 +4,7 @@ function getOpenedChatRoom(username) {
     }
 }
 
-function openChatRoom(username, status) {
+function openChatRoom(username) {
     if (getOpenedChatRoom(username)) {
         return;
     }
@@ -16,10 +16,6 @@ function openChatRoom(username, status) {
         link_to_chat_content: '#chat-content-' + username,
         chat_content_id: 'chat-content-' + username
     };
-
-    if (status !== undefined) {
-        data.user_status = status;
-    }
 
     $('.chat-rooms').loadTemplate($('#chat-room'), data, {append: true});
     $('#chat-content-' + username + ' .card-block').niceScroll();
@@ -113,14 +109,13 @@ $('.friends-list').on('click', '.open-chat-room', function (event) {
     event.preventDefault();
     var root_node = $(this).closest('.friend-list-item');
     var username = $(root_node).data('username');
-    var user_status = $(root_node).find('.status').data('status');
 
     if ($(getOpenedChatRoom(username)).length) {
         $(getOpenedChatRoom(username)).collapse('toggle');
         return;
     } else {
         $('#friends-list').modal('toggle');
-        openChatRoom(username, user_status);
+        openChatRoom(username);
     }
 });
 

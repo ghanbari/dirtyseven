@@ -15,16 +15,11 @@ function sendAnswerToFriendInvitation(username, answer) {
     );
 }
 
-function addToFriendList(username, status) {
+function addToFriendList(username) {
     $('.friends-list').loadTemplate(
         $('#friend-list-item'),
-        {username: username, status: status},
-        {
-            prepend: true,
-            success: function () {
-                $('.friend-list-item[data-username="' + username + '"] .status').data('status', status);
-            }
-        }
+        {username: username},
+        {prepend: true}
     );
 }
 
@@ -73,28 +68,12 @@ function clearRequestList() {
     $('#count-of-friend-request').text(0);
 }
 
-function changeFriendStatus(username, status) {
-    var old_status = $('.friend-list-item[data-username="' + username + '"] .status').data('status');
-    old_status = old_status === undefined ? 'offline' : old_status;
-
-    $('.friend-list-item[data-username="' + username + '"] .status')
-        .removeClass(old_status)
-        .addClass(status)
-        .data('status', status);
-
-    if ($('.chat-rooms > .chat-room[data-username=' + username + ']').length) {
-        $('.chat-rooms > .chat-room[data-username=' + username + '] .chat-control span.status')
-            .removeClass(old_status)
-            .addClass(status);
-    }
-}
-
 socket.on('socket/connect', function (session) {
     session.call('friend/friends_and_invitations').then(
         function (result) {
             //load friends list
             $.each(result.data.friends, function (friend, status) {
-                addToFriendList(friend, status);
+                addToFriendList(friend);
             });
 
             //load suggests list
@@ -236,8 +215,4 @@ $('#friends-list').on('click', '.remove-friend', function (event) {
             messenger.notification({from: 'Bot', message: error + ', ' + desc});
         }
     );
-});
-
-$('.friends-list').on('friend_status', function (event, payload) {
-    changeFriendStatus(payload.username, payload.status);
 });
