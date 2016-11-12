@@ -23,7 +23,11 @@
     color: gray;
 }
 
-.waiting {
+.inviting {
+    color: #d19c0e;
+}
+
+.invited {
     color: #ffff00;
 }
 

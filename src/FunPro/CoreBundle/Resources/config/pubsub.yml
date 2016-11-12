@@ -1,0 +1,7 @@
+fun_pro.rpc_game_create:
+    channel: games/{method}
+    handler:
+        callback: 'game.create'
+    requirements:
+        method:
+            pattern: "[a-z]+"

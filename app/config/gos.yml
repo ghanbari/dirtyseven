@@ -6,6 +6,7 @@ gos_web_socket:
         router:
             resources:
                 - "@FunProUserBundle/Resources/config/pubsub.yml"
+                - "@FunProCoreBundle/Resources/config/pubsub.yml"
     client:
         firewall: main
         session_handler: "@snc_redis.session.handler"

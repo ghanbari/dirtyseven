@@ -10,7 +10,9 @@ function deleteAllCookies() {
 }
 
 function changeMyStatus(status) {
-    $('#my-status').addClass(status);
+    $('#my-status')
+        .removeClass('online offline inviting invited playing')
+        .addClass(status);
 }
 
 var socket = WS.connect('ws://dirtyseven.ir:8080');
@@ -18,7 +20,8 @@ var session;
 
 socket.on('socket/connect', function(sess) {
     session = sess;
-    $('a[href*=create_game]').removeClass('disabled');
+    //TODO: move this line to check game rpc
+    $('a.game').removeClass('disabled');
     messenger.notification({'message': 'Successfully Connected', 'from': 'Bot'});
     changeMyStatus('online');
 
@@ -34,7 +37,7 @@ socket.on('socket/connect', function(sess) {
                 messenger.notification(payload);
                 break;
             case 'game_invitation':
-                //messenger.gameInvitation(payload);
+                $(document).triggerHandler('game_invitation', payload);
                 break;
             case 'friend_invitation':
                 $(document).triggerHandler('friend_invitation', payload);
@@ -58,6 +61,6 @@ socket.on('socket/connect', function(sess) {
 
 socket.on('socket/disconnect', function (error) {
     messenger.notification({'message': error.reason, 'from': 'Bot'});
-    $('a[href*=create_game]').addClass('disabled');
+    $('a.game').addClass('disabled');
     changeMyStatus('offline');
 });

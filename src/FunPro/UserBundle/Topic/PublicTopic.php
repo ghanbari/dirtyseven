@@ -83,11 +83,6 @@ class PublicTopic implements TopicInterface
             }
             $topic->broadcast($messages, [], [$connection->WAMP->sessionId]);
         }
-
-//        if ($data = $this->hasActiveGame($user)) {
-//            $message = array('gameId' => $data['id'], 'type' => 'resume', 'gameStatus' => $data['game']['status']);
-//            $topic->broadcast($message, [], [$connection->WAMP->sessionId]);
-//        }
     }
 
     /**
@@ -120,28 +115,4 @@ class PublicTopic implements TopicInterface
     {
         return 'chat.public';
     }
-
-//    private function hasActiveGame(UserInterface $user)
-//    {
-//        $gameId = $this->redis->hget('Users:Games', $user->getUsername());
-//
-//        if (!$gameId) {
-//            return;
-//        }
-//
-//        $game = $this->redis->hgetall("Games:$gameId");
-//
-//        if (!$game or $game['status'] == 'closed') {
-//            $this->redis->hdel('Users:Games', $user->getUsername());
-//            return;
-//        }
-//
-//        $gameTopic = $this->topicManager->getTopic("games/$gameId");
-//        if (!$gameTopic->count()) {
-//            return array(
-//                'id' => $gameId,
-//                'game' => $game,
-//            );
-//        }
-//    }
 }

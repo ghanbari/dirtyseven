@@ -10,6 +10,7 @@
     <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/messenger.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/friend.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/chatroom.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/jquery-ui/themes/base/jquery-ui.css') }}">
     <link rel="stylesheet" media="screen and (orientation:portrait)" type="text/css" href="{{ asset('bundles/funprouser/css/portrait.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/font-awesome/css/font-awesome.css') }}">
 </head>
@@ -23,7 +24,21 @@
                     <span class="fa fa-circle" id="my-status"></span>
                     <img data-username="{{ app.user.username }}" src="{{ asset('images/38x38/default.png') }}" id="myAvatar" class="img-thumbnail img-fluid rounded-circle avatar" data-size="38">
                 </li>
-                <li><a href="#create_game" data-toggle="modal" class="disabled">New Game</a></li>
+                <li>
+                    <a href="#" class="disabled dropdown-toggle game" data-toggle="dropdown">Join Game</a>
+                    <div class="dropdown-menu">
+                        <a href="#" class="dropdown-item game join" data-game-name="seven" id="join-seven">Seven</a>
+                        <a href="#" class="dropdown-item game join" data-game-name="shelem" id="join-shelem">Shelem</a>
+                        <a href="#game-suggests" data-toggle="modal" class="dropdown-item game suggests">Invitations</a>
+                    </div>
+                </li>
+                <li>
+                    <a href="#" class="disabled dropdown-toggle game" data-toggle="dropdown">New Game</a>
+                    <div class="dropdown-menu">
+                        <a href="#" class="dropdown-item game create" data-game-name="seven" id="create-seven">Seven</a>
+                        <a href="#" class="dropdown-item game create" data-game-name="shelem" id="create-shelem">Shelem</a>
+                    </div>
+                </li>
                 <li>
                     <a data-toggle="dropdown" class="dropdown-toggle" href="#">Friends</a>
                     <div class="dropdown-menu">
@@ -32,7 +47,6 @@
                         <a class="dropdown-item" data-toggle="modal" href="#friends-list">Friends list</a>
                     </div>
                 </li>
-                {#<li><a href="#">exit game</a></li>#}
                 <li class="messenger">
                     <div class="messenger-box">
                         <button class="plus show-messages-archive">&plus;</button>
@@ -113,35 +127,54 @@
             </div>
         </div>
 
-        <div class="modal fade" id="create_game" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal fade" id="game-suggests" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
+                    <div class="modal-body">
+                        <div class="container-fluid">
+                                <table class="table table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Invited by</th>
+                                            <th>Game name</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="game-suggests">
+                                    </tbody>
+                                </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="game-invitations" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
                     <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                        <h4 class="modal-title" id="myModalLabel">Invite Users</h4>
-                        <span>Your game expire after 59:30</span>
+                        <form class="form-inline" id="invite-player">
+                            <div class="form-group" id="invite-player">
+                                <div class="input-group">
+                                    <span title="Your invitation Expire after" class="input-group-addon" id="game_invitation_expire">00</span>
+                                    <input name="player_name" type="text" placeholder="Friend Username" class="form-control">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Invite</button>
+                                <button id="startGame" type="button" class="btn btn-primary">Start</button>
+                                <div class="dropdown d-inline">
+                                    <button data-toggle="dropdown" style="display: none" type="button" class="btn btn-warning cancel-invitations">Cancel</button>
+                                    <div class="dropdown-menu">
+                                        <button type="button" class="btn btn-danger dropdown-item">Yes</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                     <div class="modal-body">
                         <div class="container-fluid">
-                            {#<div class="row invite">#}
-                                {#<div class="col-sm-12">#}
-                                    {#<form class="form-inline" name="invite">#}
-                                        {#<div class="form-group">#}
-                                            {#<input type="text" placeholder="Username" id="invite_player" class="form-control">#}
-                                            {#<button type="button" id="invite" class="btn btn-primary">Invite</button>#}
-                                        {#</div>#}
-                                    {#</form>#}
-                                {#</div>#}
-                            {#</div>#}
-                            <table class="table" id="invited_users_list">
-                            </table>
+                            <div class="card-columns game_invited_users">
+                            </div>
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button id="startGame" type="button" class="btn btn-primary">Start</button>
                     </div>
                 </div>
             </div>
@@ -161,7 +194,7 @@
     <div class="messenger-game-invitation messenger_invitation" data-id="gameId">
         <button class="btn btn-success btn-sm">Accept</button>
         <button class="btn btn-danger btn-sm">Decline</button>
-        <div class="message"><strong data-content="from"></strong> invite from you to play <span data-content="gameType"></span></div>
+        <div class="message"><strong data-content="from"></strong> invite from you to play <span data-content="gameName"></span></div>
     </div>
 </script>
 <script type="text/html" id="messenger-friend-invitation">
@@ -171,16 +204,36 @@
         <div class="message"><strong data-content="from"></strong> <span data-content="message"></span></div>
     </div>
 </script>
-{#<script type="text/html" id="invited_user">#}
-    {#<tr id="invited_user" data-class="username">#}
-        {#<td class="col-md-7" data-content="username"></td>#}
-        {#<td class="col-md-2" data-content="answer"></td>#}
-        {#<td class="col-md-3"><button title="remove" class="btn btn-danger btn-sm cancel_invitation"><span class="fa fa-close"></span></button></td>#}
-    {#</tr>#}
-{#</script>#}
+<script type="text/html" id="game-suggest">
+    <tr class="game-suggest" data-template-bind='[{"attribute": "data-game-id", "value": "gameId"}]'>
+        <td data-content="invitedBy"></td>
+        <td data-content="gameName"></td>
+        <td>
+            <button type="button" class="btn btn-success answer-game-suggest"><span class="fa fa-check"></span></button>
+            <button type="button" class="btn btn-danger answer-game-suggest"><span class="fa fa-close"></span></button>
+        </td>
+    </tr>
+</script>
+<script type="text/html" id="game_invited_user">
+    <div class="card text-xs-center game_invited_user" data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
+        <div class="status-area"><span class="fa fa-circle user-status"
+            data-template-bind='[{"attribute": "data-username", "value": "username"}]'></span></div>
+        <img src="{{ asset('images/200x200/default.png') }}" class="avatar card-img-top" data-alt="username" data-size="200"
+             data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
+        <div class="card-block dropup">
+            <h4 class="card-title" data-content-prepend="username">: <span class="fa user-answer"></span></h4>
+            <div class="dropdown">
+                <button type="button" class="btn btn-danger" data-toggle="dropdown"><span class="fa fa-close"></span></button>
+                <div class="dropdown-menu">
+                    <button type="button" class="dropdown-item cancel-invitation">Remove?</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
 <script type="text/html" id="friend-suggest">
     <div class="card text-xs-center friend-suggest" data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
-        <img src="{{ asset('images/200x200/default.png') }}" class="avatar card-img-top" alt="username" data-size="200"
+        <img src="{{ asset('images/200x200/default.png') }}" class="avatar card-img-top" data-alt="username" data-size="200"
              data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
         <div class="card-block dropup">
             <h4 class="card-title" data-content="username"></h4>
@@ -191,7 +244,7 @@
 </script>
 <script type="text/html" id="friend-request">
     <div class="card text-xs-center friend-request" data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
-        <img src="{{ asset('images/200x200/default.png') }}" class="avatar card-img-top" alt="username" data-size="200"
+        <img src="{{ asset('images/200x200/default.png') }}" class="avatar card-img-top" data-alt="username" data-size="200"
              data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
         <div class="card-block dropup">
             <h4 class="card-title" data-content="username"></h4>
@@ -206,7 +259,7 @@
     <div class="card text-xs-center friend-list-item" data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
         <div class="status-area"><span class="fa fa-circle user-status"
             data-template-bind='[{"attribute": "data-username", "value": "username"}]'></span></div>
-        <img src="{{ asset('images/200x200/default.png') }}" class="avatar card-img-top" alt="username" data-size="200"
+        <img src="{{ asset('images/200x200/default.png') }}" class="avatar card-img-top" data-alt="username" data-size="200"
              data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
         <div class="card-block dropup">
             <h4 class="card-title" data-content="username"></h4>
@@ -307,11 +360,14 @@
 {% endraw %}
 <script src="{{ asset('assets/json2/json2.js') }}"></script>
 <script src="{{ asset('assets/jquery/dist/jquery.js') }}"></script>
+<script src="{{ asset('assets/jquery-ui/jquery-ui.js') }}"></script>
 <script src="{{ asset('assets/bootstrap/dist/js/bootstrap.js') }}"></script>
 <script src="{{ asset('assets/jquery-load-template/dist/jquery.loadTemplate.js') }}"></script>
 <script src="{{ asset('assets/jquery.nicescroll/dist/jquery.nicescroll.min.js') }}"></script>
 <script src="{{ asset('assets/jStorage/jstorage.js') }}"></script>
 <script src="{{ asset('assets/js-php-unserialize/php-unserialize.js') }}"></script>
+<script src="{{ asset('assets/moment/moment.js') }}"></script>
+<script src="{{ asset('assets/moment-duration-format/lib/moment-duration-format.js') }}"></script>
 {{ ws_client() }}
 <script src="{{ asset('bundles/funprohome/js/deck/messenger.js') }}"></script>
 <script src="{{ asset('bundles/funprohome/js/deck/main.js') }}"></script>
@@ -320,6 +376,7 @@
 <script src="{{ asset('bundles/funprohome/js/deck/friend.js') }}"></script>
 <script src="{{ asset('bundles/funprohome/js/deck/chatroom.js') }}"></script>
 <script src="{{ asset('bundles/funprohome/js/deck/user_status.js') }}"></script>
+<script src="{{ asset('bundles/funprohome/js/deck/game.menu.js') }}"></script>
 <script type="text/javascript">
     if (!$.jStorage.storageAvailable()) {
         alert('Local storage is not supported by your browser. Please disable "Private Mode", or upgrade to a modern browser.')

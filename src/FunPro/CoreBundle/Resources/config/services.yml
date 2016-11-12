@@ -1,0 +1,14 @@
+services:
+    fun_pro_core.game_create_rpc:
+        class: FunPro\CoreBundle\RPC\GameService
+        arguments:
+            - "@fun_pro_user.client_helper"
+            - "@fun_pro_core.manager.game"
+            - "@fun_pro_user.manager.friend"
+            - "@fun_pro_user.manager.user"
+        tags:
+            - { name: gos_web_socket.rpc }
+
+    fun_pro_core.manager.game:
+        class: FunPro\CoreBundle\Manager\GameManager
+        arguments: ["@snc_redis.default", "@doctrine"]

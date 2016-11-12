@@ -38,6 +38,7 @@ var friends = (function () {
 
     obj.prototype.addToFriendList = function (username) {
         friends.push(username);
+        $(document).triggerHandler('friends.update', {friends: friends});
         $('.friends-list').loadTemplate(
             $('#friend-list-item'),
             {username: username},
@@ -50,6 +51,7 @@ var friends = (function () {
         if (index > -1) {
             friends.slice(index, 1);
         }
+        $(document).triggerHandler('friends.update', {friends: friends});
         $('.friend-list-item[data-username="' + username + '"]').remove();
     };
 
