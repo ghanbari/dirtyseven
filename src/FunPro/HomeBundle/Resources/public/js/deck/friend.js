@@ -29,7 +29,7 @@ var friends = (function () {
         });
 
         socket.on('socket/disconnect', function(error) {
-            clearFriendList();
+            that.clearFriendList();
             clearRequestList();
             clearSuggestList();
         });
@@ -55,6 +55,11 @@ var friends = (function () {
         $('.friend-list-item[data-username="' + username + '"]').remove();
     };
 
+    obj.prototype.clearFriendList = function () {
+        friends = [];
+        $('.friend-list-item').remove();
+    };
+
     obj.prototype.getFriends = function () {
         return friends;
     };
@@ -68,6 +73,7 @@ function sendAnswerToFriendInvitation(username, answer) {
         function(result) {
             if (result.status.code == 10 && answer) {
                 friends.addToFriendList(username);
+                userStatus.checkStatus(username);
             }
 
             removeFromSuggestList(username);
@@ -77,10 +83,6 @@ function sendAnswerToFriendInvitation(username, answer) {
             messenger.notification({from: 'Bot', message: error + ', ' + desc});
         }
     );
-}
-
-function clearFriendList() {
-    $('.friend-list-item').remove();
 }
 
 function addToSuggestList(username) {
@@ -194,6 +196,7 @@ $(document).on('friend_invitation', function (event, payload) {
 $(document).on('answer_to_friend_invitation', function (event, payload) {
     if (payload.answer == true) {
         friends.addToFriendList(payload.from);
+        userStatus.checkStatus(payload.from);
     }
 
     removeFromRequestList(payload.from);
@@ -205,17 +208,9 @@ $(document).on('remove_friend', function (event, payload) {
     messenger.notification({from: payload.from, message: payload.message});
 });
 
-//answer to friend invitation in messenger
-$('#messeges').on('click', '.messenger-friend-invitation > button', function(event) {
-    var answer = $(this).hasClass('btn-success') ? true : false;
-    var username = $(this).parent().data('username');
-    sendAnswerToFriendInvitation(username, answer);
-});
-
 //answer to friend invitation
-$('.friend-suggests').on('click', '.answer-friend-suggest', function (event) {
-    var root = $(this).closest('.friend-suggest');
-    var username = $(root).data('username');
+$('.friend-suggests, #messeges').on('click', '.answer-friend-suggest', function (event) {
+    var username = $(this).parent().data('username');
     var answer = $(this).hasClass('btn-success') ? true : false;
     sendAnswerToFriendInvitation(username, answer);
 });

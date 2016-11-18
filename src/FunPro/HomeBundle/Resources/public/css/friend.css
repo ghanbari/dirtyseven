@@ -4,36 +4,14 @@
     padding: 0.3rem;
 }
 
-.friend-suggests .card-block,
-.friend-requests .card-block,
-.friends-list .card-block {
-    padding: 0.25rem;
-}
-
-.friend-suggests.card-columns,
-.friend-requests.card-columns,
-.friends-list.card-columns {
-    column-count: 4;
-}
-
-@media all and (max-width: 1000px) {
-    .friend-suggests.card-columns,
-    .friend-requests.card-columns,
-    .friends-list.card-columns {
-        column-count: 3;
-    }
+.friend-suggests .card,
+.friend-requests .card,
+.friends-list .card{
+    padding: 0;
 }
 
 .friend-list-item .user-status {
     position: absolute;
     top: 1%;
     left: 1%;
-}
-
-.card > .status-area{
-    position: absolute;
-    width: 17px;
-    height: 17px;
-    background-color: #ffffff;
-    border-bottom-right-radius: 0.68rem;
 }

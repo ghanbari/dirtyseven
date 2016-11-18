@@ -4,11 +4,14 @@ namespace FunPro\CoreBundle\Manager;
 
 use Doctrine\Bundle\DoctrineBundle\Registry;
 use FunPro\CoreBundle\Exception\ActiveGameException;
-use FunPro\CoreBundle\Exception\GameNotFoundException;
-use FunPro\CoreBundle\Exception\InvalidScopeException;
 use FunPro\CoreBundle\Exception\NotInvitedException;
 use FunPro\CoreBundle\Model\Game;
+use FunPro\UserBundle\Entity\User;
+use FunPro\UserBundle\Event\UserStatusEvent;
+use FunPro\UserBundle\Event\UserStatusResetEvent;
+use FunPro\UserBundle\Events;
 use Predis\Client;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class GameManager
 {
@@ -22,10 +25,16 @@ class GameManager
      */
     private $doctrine;
 
-    public function __construct(Client $redis, Registry $doctrine)
+    /**
+     * @var EventDispatcherInterface
+     */
+    private $eventDispatcher;
+
+    public function __construct(Client $redis, Registry $doctrine, EventDispatcherInterface $eventDispatcher)
     {
         $this->redis = $redis;
         $this->doctrine = $doctrine;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -58,6 +67,7 @@ class GameManager
         $this->redis->hmset("Games:$gameId", $game);
 
         $this->redis->expire("Games:$gameId", 3600);
+        $this->eventDispatcher->dispatch(Events::CHANGE_USER_STATUS, new UserStatusEvent($ownerUsername, User::STATUS_INVITING));
 
         return array(
             'id' => $gameId,
@@ -105,6 +115,9 @@ class GameManager
         $this->redis->hdel('Users:Games', $game['owner']);
 
         $this->removeInvitations($gameId);
+
+        $event = new UserStatusEvent($game['owner'], User::STATUS_ONLINE);
+        $this->eventDispatcher->dispatch(Events::CHANGE_USER_STATUS, $event);
 
         #TODO: if game closed, remove logs, games or private games, Games:$gameId:cards, Games:$gameId:userId:cards
     }
@@ -217,6 +230,17 @@ class GameManager
     }
 
     /**
+     * @param $username
+     * @param $gameId
+     *
+     * @return bool
+     */
+    public function isInvited($username, $gameId)
+    {
+        return in_array($username, $this->getInvitedUsers($gameId));
+    }
+
+    /**
      * @param $gameId
      * @param $username
      *
@@ -246,14 +270,25 @@ class GameManager
         $this->redis->zremrangebyscore("GameInvitation:$username", 0, time());
     }
 
+    /**
+     * @param $gameId
+     * @param $username
+     */
     public function removeUserInvitation($gameId, $username)
     {
         $ttl = $this->redis->ttl("Games:$gameId");
         $this->redis->hdel("PrivateGames:$gameId:invitations", $username);
         $this->redis->expire("PrivateGames:$gameId:invitations", $ttl);
         $this->redis->zrem("GameInvitation:$username", $gameId);
+        if ($this->redis->hget('Users:Games', $username) == $gameId) {
+            $this->redis->hdel('Users:Games', $username);
+        }
+        $this->eventDispatcher->dispatch(Events::RESET_USER_STATUS, new UserStatusResetEvent($username));
     }
 
+    /**
+     * @param $gameId
+     */
     public function removeInvitations($gameId)
     {
         $invitedUsers = $this->getInvitedUsers($gameId);
@@ -261,6 +296,84 @@ class GameManager
 
         foreach ($invitedUsers as $invitedUser) {
             $this->redis->zrem("GameInvitation:$invitedUser", $gameId);
+            $this->eventDispatcher->dispatch(Events::RESET_USER_STATUS, new UserStatusResetEvent($invitedUser));
         }
+    }
+
+    /**
+     * @param $gameId
+     * @param $username
+     * @param $answer
+     */
+    public function setAnswer($gameId, $username, $answer)
+    {
+        $ttl = $this->redis->ttl("Games:$gameId");
+        $this->redis->hset("PrivateGames:$gameId:invitations", $username, $answer);
+        $this->redis->expire("PrivateGames:$gameId:invitations", $ttl);
+        $this->redis->zrem("GameInvitation:$username", $gameId);
+
+        if ($answer === 'accept') {
+            $this->eventDispatcher->dispatch(Events::CHANGE_USER_STATUS, new UserStatusEvent($username, User::STATUS_INVITED));
+            $this->redis->hset('Users:Games', $username, $gameId);
+        } else {
+            if ($this->redis->hget('Users:Games', $username) == $gameId) {
+                $this->redis->hdel('Users:Games', $username);
+            }
+        }
+    }
+
+    /**
+     * @param $gameId
+     * @param $players
+     */
+    private function divisionCards($gameId, $players)
+    {
+        $cards = array(
+            's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10', 'sj', 'sq', 'sk', 'sA',
+            'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10', 'hj', 'hq', 'hk', 'hA',
+            'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8', 'd9', 'd10', 'dj', 'dq', 'dk', 'dA',
+            'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10', 'cj', 'cq', 'ck', 'cA',
+        );
+
+        shuffle($cards);
+        shuffle($cards);
+        shuffle($cards);
+        foreach ($players as $player) {
+            $userCards = array();
+            for ($j = 0; $j < 7; $j++) {
+                $userCards[] = array_pop($cards);
+            }
+            $this->redis->sadd("Games:$gameId:$player:cards", $userCards);
+        }
+
+        $cards = array_flip(array_values($cards));
+        $this->redis->zadd("Games:$gameId:cards", $cards);
+    }
+
+    /**
+     * @param $gameId
+     *
+     * @return array $players
+     */
+    public function startGame($gameId)
+    {
+        $game = $this->getGame($gameId);
+        $invitations = $this->getGameInvitations($gameId);
+        $temp = array_keys(array_filter(
+            $invitations,
+            function ($value) {
+                return $value == 'accept';
+            }
+        ));
+        $players = array_keys($temp);
+
+        array_push($players, $game['owner']);
+
+        $this->divisionCards($gameId, $players);
+
+        $this->redis->hsetnx("Games:$gameId", 'seats', serialize($players));
+        $this->redis->hset("Games:$gameId", 'status', 'playing');
+
+        return $players;
     }
 }

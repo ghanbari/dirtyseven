@@ -2,15 +2,19 @@
 
 namespace FunPro\UserBundle\Listener;
 
+use FunPro\CoreBundle\Manager\GameManager;
+use FunPro\CoreBundle\Model\Game;
 use FunPro\UserBundle\Client\ClientHelper;
 use FunPro\UserBundle\Entity\User;
+use FunPro\UserBundle\Event\UserStatusEvent;
+use FunPro\UserBundle\Event\UserStatusResetEvent;
+use FunPro\UserBundle\Events;
 use FunPro\UserBundle\Manager\FriendManager;
 use FunPro\UserBundle\Manager\UserManager;
 use Gos\Bundle\WebSocketBundle\Event\ClientEvent;
 use Gos\Bundle\WebSocketBundle\Event\ClientErrorEvent;
 use Gos\Bundle\WebSocketBundle\Event\ServerEvent;
 use Gos\Bundle\WebSocketBundle\Event\ClientRejectedEvent;
-use Ratchet\Wamp\TopicManager;
 use React\Socket\ConnectionException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -22,11 +26,6 @@ use Symfony\Component\Security\Core\User\UserInterface;
  */
 class UserStatusListener implements EventSubscriberInterface
 {
-    /**
-     * @var TopicManager
-     */
-    private $topicManager;
-
     /**
      * @var FriendManager
      */
@@ -42,32 +41,86 @@ class UserStatusListener implements EventSubscriberInterface
      */
     private $clientHelper;
 
+    /**
+     * @var GameManager
+     */
+    private $gameManager;
+
     public function __construct(
-        TopicManager $topicManager,
         ClientHelper $clientHelper,
         FriendManager $friend,
+        GameManager $gameManager,
         UserManager $user
     ) {
-        $this->topicManager = $topicManager;
         $this->friendManager = $friend;
         $this->userManager = $user;
         $this->clientHelper = $clientHelper;
+        $this->gameManager = $gameManager;
     }
 
     public static function getSubscribedEvents()
     {
         return array(
-            'gos_web_socket.client_connected' => 'changeStatus',
-            'gos_web_socket.client_disconnected' => 'changeStatus',
+            'gos_web_socket.client_connected' => 'onClientConnect',
+            'gos_web_socket.client_disconnected' => 'onClientDisconnect',
             'gos_web_socket.client_error' => 'onClientError',
             'gos_web_socket.client_rejected' => 'onClientRejected',
+            Events::CHANGE_USER_STATUS => 'onStatusChanged',
+            Events::RESET_USER_STATUS => 'onStatusReset',
         );
     }
 
-    public function changeStatus(ClientEvent $event)
+    private function changeStatus($username, $status)
+    {
+        $this->userManager->updateStatus($username, $status);
+
+        $friendsUsername = $this->friendManager->getFriends($username);
+        $sessionIds = $this->clientHelper->getUsersSessionId(array_merge($friendsUsername, array($username)));
+
+        if (!empty($sessionIds)) {
+            $message = array('type' => 'friend_status', 'username' => $username, 'status' => $status);
+            $this->clientHelper->getPublicTopic()->broadcast($message, array(), $sessionIds);
+        }
+    }
+
+    private function getGameStatus($username)
+    {
+        $game = $this->gameManager->getActiveGame($username);
+
+        if (!$game or $game['game']['status'] == Game::STATUS_FINISHED) {
+            $status = User::STATUS_ONLINE;
+        } elseif ($game['game']['status'] == Game::STATUS_PLAYING) {
+            $status = User::STATUS_PLAYING;
+        } else {
+            $status = $game['game']['owner'] == $username ? User::STATUS_INVITING : User::STATUS_INVITED;
+        }
+
+        return $status;
+    }
+
+    public function onStatusReset(UserStatusResetEvent $event)
+    {
+        $username = $event->getUsername();
+        $isOnline = $this->clientHelper->getConnection($username);
+
+        if ($isOnline) {
+            $status = $this->getGameStatus($username);
+        } else {
+            $status = User::STATUS_OFFLINE;
+        }
+
+        $this->changeStatus($username, $status);
+    }
+
+    public function onStatusChanged(UserStatusEvent $event)
+    {
+        $this->changeStatus($event->getUsername(), $event->getStatus());
+    }
+
+    public function onClientConnect(ClientEvent $event)
     {
         $connection = $event->getConnection();
-        $publicTopic = $this->topicManager->getTopic('chat/public');
+        $publicTopic = $this->clientHelper->getPublicTopic();
         $user = $this->clientHelper->getCurrentUser($connection);
 
         if ((!$user or !$user instanceof UserInterface)) {
@@ -76,16 +129,14 @@ class UserStatusListener implements EventSubscriberInterface
             throw new ConnectionException();
         }
 
-        $status = $event->getType() === ClientEvent::CONNECTED ? User::STATUS_ONLINE : User::STATUS_OFFLINE;
-        $this->userManager->updateStatus($user->getUsername(), $status);
+        $status = $this->getGameStatus($user->getUsername());
+        $this->changeStatus($user->getUsername(), $status);
+    }
 
-        $friendsUsername = $this->friendManager->getFriends($user->getUsername());
-        $sessionIds = $this->clientHelper->getUsersSessionId($friendsUsername);
-
-        if (!empty($sessionIds)) {
-            $message = array('type' => 'friend_status', 'username' => $user->getUsername(), 'status' => $status);
-            $publicTopic->broadcast($message, array(), $sessionIds);
-        }
+    public function onClientDisconnect(ClientEvent $event)
+    {
+        $user = $this->clientHelper->getCurrentUser($event->getConnection());
+        $this->changeStatus($user->getUsername(), User::STATUS_OFFLINE);
     }
 
     /**

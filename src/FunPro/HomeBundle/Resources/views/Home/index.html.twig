@@ -9,6 +9,7 @@
     <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/menu.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/messenger.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/friend.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/game.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/chatroom.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/jquery-ui/themes/base/jquery-ui.css') }}">
     <link rel="stylesheet" media="screen and (orientation:portrait)" type="text/css" href="{{ asset('bundles/funprouser/css/portrait.css') }}">
@@ -21,7 +22,7 @@
         <div class="menu">
             <ul>
                 <li title="Online & Free">
-                    <span class="fa fa-circle" id="my-status"></span>
+                    <span class="fa fa-circle user-status" data-username="{{ app.user.username }}" id="my-status"></span>
                     <img data-username="{{ app.user.username }}" src="{{ asset('images/38x38/default.png') }}" id="myAvatar" class="img-thumbnail img-fluid rounded-circle avatar" data-size="38">
                 </li>
                 <li>
@@ -37,6 +38,7 @@
                     <div class="dropdown-menu">
                         <a href="#" class="dropdown-item game create" data-game-name="seven" id="create-seven">Seven</a>
                         <a href="#" class="dropdown-item game create" data-game-name="shelem" id="create-shelem">Shelem</a>
+                        <a href="#current-game" data-toggle="modal" class="dropdown-item game current hidden-xs-up" id="current-game-link">Current</a>
                     </div>
                 </li>
                 <li>
@@ -70,7 +72,7 @@
                     </div>
                     <div class="modal-body">
                         <div class="container-fluid">
-                            <div class="card-columns friends-list">
+                            <div class="row friends-list">
                             </div>
                         </div>
                     </div>
@@ -89,7 +91,7 @@
                     </div>
                     <div class="modal-body">
                         <div class="container-fluid">
-                            <div class="card-columns friend-suggests">
+                            <div class="row friend-suggests">
                             </div>
                         </div>
                     </div>
@@ -119,7 +121,7 @@
                                 </div>
                             </div>
                             <hr>
-                            <div class="card-columns friend-requests">
+                            <div class="row friend-requests">
                             </div>
                         </div>
                     </div>
@@ -164,7 +166,7 @@
                                 <div class="dropdown d-inline">
                                     <button data-toggle="dropdown" style="display: none" type="button" class="btn btn-warning cancel-invitations">Cancel</button>
                                     <div class="dropdown-menu">
-                                        <button type="button" class="btn btn-danger dropdown-item">Yes</button>
+                                        <button type="button" class="btn btn-danger dropdown-item" id="cancel-invitations">Yes</button>
                                     </div>
                                 </div>
                             </div>
@@ -172,7 +174,27 @@
                     </div>
                     <div class="modal-body">
                         <div class="container-fluid">
-                            <div class="card-columns game_invited_users">
+                            <div class="game_invited_users row">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="current-game">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button class="close" type="button" data-dismiss="modal">&times;</button>
+                        <div class="btn-group">
+                            <button class="btn btn-warning" id="cancel_current_game">Cancel</button>
+                            <span class="btn btn-warning disabled">Remian time: <span id="my_invitation_expire">0</span></span>
+                        </div>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container-fluid">
+                            <div class="row current-game">
                             </div>
                         </div>
                     </div>
@@ -191,16 +213,16 @@
     <p class="messenger-notification"><span class="message-author" data-content="author"></span>: <span class="message" data-content="message"></span></p>
 </script>
 <script type="text/html" id="messenger-game-invitation">
-    <div class="messenger-game-invitation messenger_invitation" data-id="gameId">
-        <button class="btn btn-success btn-sm">Accept</button>
-        <button class="btn btn-danger btn-sm">Decline</button>
+    <div class="messenger-game-invitation messenger_invitation" data-template-bind='[{"attribute": "data-game-id", "value": "gameId"}]'>
+        <button class="btn btn-success btn-sm answer-game-suggest">Accept</button>
+        <button class="btn btn-danger btn-sm answer-game-suggest">Decline</button>
         <div class="message"><strong data-content="from"></strong> invite from you to play <span data-content="gameName"></span></div>
     </div>
 </script>
 <script type="text/html" id="messenger-friend-invitation">
     <div class="messenger-friend-invitation messenger_invitation" data-template-bind='[{"attribute": "data-username", "value": "from"}]'>
-        <button class="btn btn-success btn-sm">Accept</button>
-        <button class="btn btn-danger btn-sm">Decline</button>
+        <button class="btn btn-success btn-sm answer-friend-suggest">Accept</button>
+        <button class="btn btn-danger btn-sm answer-friend-suggest">Decline</button>
         <div class="message"><strong data-content="from"></strong> <span data-content="message"></span></div>
     </div>
 </script>
@@ -208,19 +230,19 @@
     <tr class="game-suggest" data-template-bind='[{"attribute": "data-game-id", "value": "gameId"}]'>
         <td data-content="invitedBy"></td>
         <td data-content="gameName"></td>
-        <td>
+        <td data-template-bind='[{"attribute": "data-game-id", "value": "gameId"}]'>
             <button type="button" class="btn btn-success answer-game-suggest"><span class="fa fa-check"></span></button>
             <button type="button" class="btn btn-danger answer-game-suggest"><span class="fa fa-close"></span></button>
         </td>
     </tr>
 </script>
 <script type="text/html" id="game_invited_user">
-    <div class="card text-xs-center game_invited_user" data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
+    <div class="card col-md-3 col-sm-4 col-xs-6 text-xs-center game_invited_user" data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
         <div class="status-area"><span class="fa fa-circle user-status"
             data-template-bind='[{"attribute": "data-username", "value": "username"}]'></span></div>
-        <img src="{{ asset('images/200x200/default.png') }}" class="avatar card-img-top" data-alt="username" data-size="200"
+        <img src="{{ asset('images/215x215/default.png') }}" class="avatar img-fluid card-img-top" data-alt="username" data-size="215"
              data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
-        <div class="card-block dropup">
+        <div class="card-footer dropup">
             <h4 class="card-title" data-content-prepend="username">: <span class="fa user-answer"></span></h4>
             <div class="dropdown">
                 <button type="button" class="btn btn-danger" data-toggle="dropdown"><span class="fa fa-close"></span></button>
@@ -231,11 +253,21 @@
         </div>
     </div>
 </script>
-<script type="text/html" id="friend-suggest">
-    <div class="card text-xs-center friend-suggest" data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
-        <img src="{{ asset('images/200x200/default.png') }}" class="avatar card-img-top" data-alt="username" data-size="200"
+<script type="text/html" id="current-game-members">
+    <div class="card col-md-3 text-xs-center current-game-members" style="padding: 0"
+         data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
+        <img src="{{ asset('images/140x140/default.png') }}" class="avatar img-fluid card-img-top" data-alt="username" data-size="140"
              data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
-        <div class="card-block dropup">
+        <div class="card-footer dropup">
+            <h4 class="card-title" data-content="username"></h4>
+        </div>
+    </div>
+</script>
+<script type="text/html" id="friend-suggest">
+    <div class="card col-md-3 col-sm-4 col-xs-6 text-xs-center friend-suggest" data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
+        <img src="{{ asset('images/215x215/default.png') }}" class="avatar img-fluid card-img-top" data-alt="username" data-size="215"
+             data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
+        <div class="card-footer dropup" data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
             <h4 class="card-title" data-content="username"></h4>
             <button type="button" class="btn btn-success answer-friend-suggest"><span class="fa fa-check"></span></button>
             <button type="button" class="btn btn-danger answer-friend-suggest"><span class="fa fa-close"></span></button>
@@ -243,10 +275,10 @@
     </div>
 </script>
 <script type="text/html" id="friend-request">
-    <div class="card text-xs-center friend-request" data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
-        <img src="{{ asset('images/200x200/default.png') }}" class="avatar card-img-top" data-alt="username" data-size="200"
+    <div class="card col-md-3 col-sm-4 col-xs-6 text-xs-center friend-request" data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
+        <img src="{{ asset('images/215x215/default.png') }}" class="avatar img-fluid card-img-top" data-alt="username" data-size="215"
              data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
-        <div class="card-block dropup">
+        <div class="card-footer dropup">
             <h4 class="card-title" data-content="username"></h4>
             <button type="button" class="btn btn-danger" data-toggle="dropdown"><span class="fa fa-close"></span></button>
             <div class="dropdown-menu">
@@ -256,12 +288,12 @@
     </div>
 </script>
 <script type="text/html" id="friend-list-item">
-    <div class="card text-xs-center friend-list-item" data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
+    <div class="card col-md-3 col-sm-4 col-xs-6 text-xs-center friend-list-item" data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
         <div class="status-area"><span class="fa fa-circle user-status"
             data-template-bind='[{"attribute": "data-username", "value": "username"}]'></span></div>
-        <img src="{{ asset('images/200x200/default.png') }}" class="avatar card-img-top" data-alt="username" data-size="200"
+        <img src="{{ asset('images/215x215/default.png') }}" class="avatar img-fluid card-img-top" data-alt="username" data-size="215"
              data-template-bind='[{"attribute": "data-username", "value": "username"}]'>
-        <div class="card-block dropup">
+        <div class="card-footer dropup">
             <h4 class="card-title" data-content="username"></h4>
             <button type="button" class="btn btn-primary open-chat-room"><span class="fa fa-comments"></span></button>
             <button type="button" class="btn btn-danger" data-toggle="dropdown"><span class="fa fa-close"></span></button>
@@ -372,7 +404,6 @@
 <script src="{{ asset('bundles/funprohome/js/deck/messenger.js') }}"></script>
 <script src="{{ asset('bundles/funprohome/js/deck/main.js') }}"></script>
 <script src="{{ asset('bundles/funprohome/js/deck/avatar.js') }}"></script>
-<script src="{{ asset('bundles/funprohome/js/deck/menu.js') }}"></script>
 <script src="{{ asset('bundles/funprohome/js/deck/friend.js') }}"></script>
 <script src="{{ asset('bundles/funprohome/js/deck/chatroom.js') }}"></script>
 <script src="{{ asset('bundles/funprohome/js/deck/user_status.js') }}"></script>

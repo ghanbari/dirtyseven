@@ -11,4 +11,4 @@ services:
 
     fun_pro_core.manager.game:
         class: FunPro\CoreBundle\Manager\GameManager
-        arguments: ["@snc_redis.default", "@doctrine"]
+        arguments: ["@snc_redis.default", "@doctrine", "@event_dispatcher"]

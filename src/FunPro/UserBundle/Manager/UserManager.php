@@ -26,7 +26,7 @@ class UserManager
 
     public function findUser($username)
     {
-        return $this->doctrine->getRepository('FunProUserBundle:User')->findOneByUsername($username);
+        return $this->doctrine->getRepository('FunProUserBundle:User')->findOneByUsernameCanonical($username);
     }
 
     public function updateStatus($username, $status)

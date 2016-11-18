@@ -47,3 +47,15 @@ table.invited_users_list tr:first-child td{
 a.disabled {
     pointer-events: none;
 }
+
+.game_invited_user {
+    padding: 0;
+}
+
+.card > .status-area{
+    position: absolute;
+    width: 17px;
+    height: 17px;
+    background-color: #ffffff;
+    border-bottom-right-radius: 0.68rem;
+}

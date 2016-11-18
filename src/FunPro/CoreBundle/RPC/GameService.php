@@ -169,7 +169,7 @@ class GameService implements RpcInterface
         }
 
         if ($game['game']['status'] !== Game::STATUS_WAITING) {
-            $message = 'Your game started/closed, You can remove invitation after game start';
+            $message = 'Your game started/closed, You can not remove invitation after game start';
             return array(
                 'status' => array('message' => $message, 'code' => -2),
                 'data' => array(),
@@ -195,6 +195,20 @@ class GameService implements RpcInterface
             $this->clientHelper->getPublicTopic()->broadcast($data, array(), array($friendConn->WAMP->sessionId));
         }
 
+        $temp = array_diff($invitedUsers, array($friendUsername));
+        $players = array_keys(array_filter(
+            $temp,
+            function ($value) {
+                return $value == 'accept';
+            }
+        ));
+        $players[] = $user->getUsername();
+        $this->clientHelper->getPublicTopic()->broadcast(
+            array('type' => 'game_status', 'status' => 'update_players', 'gameId' => $game['id'], 'players' => $players),
+            array(),
+            $this->clientHelper->getUsersSessionId($players)
+        );
+
         if (count($invitedUsers) < 2) {
             $code = 1;
             $message = 'Your game was removed';
@@ -207,6 +221,59 @@ class GameService implements RpcInterface
 
         return array(
             'status' => array('message' => $message, 'code' => $code),
+            'data' => array(),
+        );
+    }
+
+    public function removeInvitations(ConnectionInterface $connection, WampRequest $request, $params)
+    {
+        $user = $this->clientHelper->getCurrentUser($connection);
+        $game = $this->gameManager->getActiveGameCreatedBy($user->getUsername());
+
+        if ($game === null) {
+            return array(
+                'status' => array('message' => 'Your game expired, please create another game again', 'code' => -1),
+                'data' => array(),
+            );
+        }
+
+        if ($game['game']['status'] !== Game::STATUS_WAITING) {
+            $message = 'Your game started/closed, You can not remove invitation after game start';
+            return array(
+                'status' => array('message' => $message, 'code' => -2),
+                'data' => array(),
+            );
+        }
+
+        $sessions = $this->clientHelper->getUsersSessionId($this->gameManager->getInvitedUsers($game['id']));
+        if ($sessions) {
+            $data = array(
+                'type' => 'game_invitation',
+                'from' => $user->getUsername(),
+                'gameId' => $game['id'],
+                'status' => 'canceled',
+            );
+            $this->clientHelper->getPublicTopic()->broadcast($data, array(), $sessions);
+        }
+//
+//        $temp = array_diff($invitedUsers, array($friendUsername));
+//        $players = array_keys(array_filter(
+//            $temp,
+//            function ($value) {
+//                return $value == 'accept';
+//            }
+//        ));
+//        $players[] = $user->getUsername();
+//        $this->clientHelper->getPublicTopic()->broadcast(
+//            array('type' => 'game_status', 'status' => 'update_players', 'gameId' => $game['id'], 'players' => $players),
+//            array(),
+//            $this->clientHelper->getUsersSessionId($players)
+//        );
+
+        $this->gameManager->removeGame($game['id']);
+
+        return array(
+            'status' => array('message' => 'Your game was removed', 'code' => 1),
             'data' => array(),
         );
     }
@@ -227,6 +294,98 @@ class GameService implements RpcInterface
         return array(
             'status' => array('message' => 'OK', 'code' => 1),
             'data' => array('invitations' => $invitationsInfo),
+        );
+    }
+
+    public function answerToGameInvitation(ConnectionInterface $connection, WampRequest $request, $params)
+    {
+        $user = $this->clientHelper->getCurrentUser($connection);
+        $username = $user->getUsername();
+
+        if (!array_key_exists('answer', $params) or !array_key_exists('gameId', $params)) {
+            return;
+        }
+
+        $gameId = $params['gameId'];
+        $answer = $params['answer'];
+
+        if ($userGame = $this->gameManager->getActiveGame($username)) {
+            if ($userGame['id'] != $gameId) {
+                return array(
+                    'status' => array('message' => 'You have active game, please first previous game', 'code' => -2),
+                    'data' => array(),
+                );
+            }
+        }
+
+        $invitations = $this->gameManager->getGameInvitations($gameId);
+        if (!array_key_exists($username, $invitations)) {
+            return array(
+                'status' => array('message' => 'You have not invitation or Your invitation removed', 'code' => -3),
+                'data' => array(),
+            );
+        }
+
+        $game = $this->gameManager->getGame($gameId);
+        if (!$game or $game['status'] !== Game::STATUS_WAITING) {
+            return array(
+                'status' => array('message' => 'You can not join to game, game was started or removed', 'code' => -4),
+                'data' => array(),
+            );
+        }
+
+        if ($answer === 'reject') {
+            $this->gameManager->setAnswer($gameId, $username, $answer);
+            $msg = array('type' => 'answer_to_game_invitation', 'from' => $username, 'answer' => $answer);
+            $ownerConnection = $this->clientHelper->getConnection($game['owner']);
+            $this->clientHelper->getPublicTopic()->broadcast($msg, array(), array($ownerConnection->WAMP->sessionId));
+            return array(
+                'status' => array('message' => 'You are removed from list', 'code' => 2),
+                'data' => array(),
+            );
+        } else {
+            $invitations[$username] = $answer;
+            $accepted = array_keys(array_filter(
+                $invitations,
+                function ($value) {
+                    return $value == 'accept';
+                }
+            ));
+
+            //owner is not in this list
+            if (count($accepted) >= 4) {
+                return array(
+                    'status' => array('message' => 'Sorry, Game is full and will start as soon', 'code' => -6),
+                    'data' => array(),
+                );
+            }
+
+            $this->gameManager->setAnswer($gameId, $username, $answer);
+        }
+
+        $gameOwnerUsername = $game['owner'];
+        $accepted[] = $gameOwnerUsername;
+        $sessions = $this->clientHelper->getUsersSessionId(array_keys($accepted));
+
+        $msg = array('type' => 'answer_to_game_invitation', 'from' => $username, 'answer' => $answer);
+        $ownerConnection = $this->clientHelper->getConnection($game['owner']);
+        $this->clientHelper->getPublicTopic()->broadcast($msg, array(), array($ownerConnection->WAMP->sessionId));
+
+        if (count($accepted) === 4) {
+            $this->gameManager->startGame($gameId);
+            $message = array('type' => 'game_status', 'status' => 'started', 'gameId' => $gameId);
+            $this->clientHelper->getPublicTopic()->broadcast($message, array(), $sessions);
+        } else {
+            $this->clientHelper->getPublicTopic()->broadcast(
+                array('type' => 'game_status', 'status' => 'update_players', 'gameId' => $gameId, 'players' => $accepted),
+                array(),
+                $sessions
+            );
+        }
+
+        return array(
+            'status' => array('message' => 'You accept invitation, please wait till game start', 'code' => 1),
+            'data' => array(),
         );
     }
 }

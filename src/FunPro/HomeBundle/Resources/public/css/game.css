@@ -1,0 +1,13 @@
+.game_invited_users .dropdown-menu {
+    padding: 0.3rem;
+}
+
+.game_invited_users .card{
+    padding: 0;
+}
+
+.game_invited_user .user-status {
+    position: absolute;
+    top: 1%;
+    left: 1%;
+}

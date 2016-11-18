@@ -19,7 +19,8 @@ class User extends BaseUser
 {
     const STATUS_OFFLINE    = 'offline';
     const STATUS_ONLINE     = 'online';
-    const STATUS_WAITING    = 'waiting';
+    const STATUS_INVITING   = 'inviting';
+    const STATUS_INVITED    = 'invited';
     const STATUS_PLAYING    = 'playing';
 
     /**
@@ -73,7 +74,7 @@ class User extends BaseUser
     /**
      * @var string
      *
-     * @ORM\Column()
+     * @ORM\Column(nullable=true)
      */
     protected $avatar;
 
@@ -105,6 +106,8 @@ class User extends BaseUser
     {
         parent::__construct();
         $this->setStatus(self::STATUS_OFFLINE);
+        $this->setCreatedAt(new \DateTime());
+        $this->setUpdatedAt(new \DateTime());
     }
 
     /**

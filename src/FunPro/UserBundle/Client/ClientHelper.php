@@ -94,4 +94,17 @@ class ClientHelper
 
         return $user ? $user['connection'] : null;
     }
+
+    public function getConnections($usernames)
+    {
+        $connections = array();
+        foreach ($usernames as $username) {
+            $connection = $this->getConnection($username);
+            if ($connection) {
+                $connections[$username] = $connection;
+            }
+        }
+
+        return $connections;
+    }
 }

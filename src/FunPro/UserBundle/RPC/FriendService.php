@@ -78,7 +78,7 @@ class FriendService implements RpcInterface
 
     public function sendFriendRequestToUsername(ConnectionInterface $connection, WampRequest $request, $params)
     {
-        $friendUsername = $params['username'];
+        $friendUsername = strtolower($params['username']);
         if (!$user = $this->clientHelper->getCurrentUser($connection)) {
             return;
         }
@@ -159,7 +159,7 @@ class FriendService implements RpcInterface
 
     public function cancelFriendRequest(ConnectionInterface $connection, WampRequest $request, $params)
     {
-        $friendUsername = $params['username'];
+        $friendUsername = strtolower($params['username']);
         if (!$user = $this->clientHelper->getCurrentUser($connection)) {
             return;
         }
@@ -234,7 +234,7 @@ class FriendService implements RpcInterface
 
     public function answerToFriendRequest(ConnectionInterface $connection, WampRequest $request, $params)
     {
-        $friendUsername = $params['username'];
+        $friendUsername = strtolower($params['username']);
         if (!$user = $this->clientHelper->getCurrentUser($connection)) {
             return;
         }

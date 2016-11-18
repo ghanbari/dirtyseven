@@ -6,9 +6,9 @@ services:
     fun_pro.user.status:
         class: FunPro\UserBundle\Listener\UserStatusListener
         arguments:
-            - "@gos_web_socket.wamp.topic_manager"
             - "@fun_pro_user.client_helper"
             - "@fun_pro_user.manager.friend"
+            - "@fun_pro_core.manager.game"
             - "@fun_pro_user.manager.user"
         tags:
             - { name: kernel.event_subscriber }

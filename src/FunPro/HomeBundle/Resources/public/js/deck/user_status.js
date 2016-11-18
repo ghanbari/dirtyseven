@@ -21,7 +21,7 @@ userStatus = (function (){
     };
 
     var Status = function () {
-        setTimeout(updateStatus, 3000);
+        socket.on('socket/connect', updateStatus);
         setInterval(updateStatus, 180000);
     };
 
@@ -29,11 +29,15 @@ userStatus = (function (){
         return users.hasOwnProperty(username) ? users[username] : 'offline';
     };
 
-    Status.prototype.update = function (username, status) {
-        if (users.hasOwnProperty(username)) {
-            users[username] = status;
-            this.updateUI([username]);
+    Status.prototype.checkStatus = function(username) {
+        if (!users.hasOwnProperty(username)) {
+            updateStatus();
         }
+    };
+
+    Status.prototype.update = function (username, status) {
+        users[username] = status;
+        this.updateUI([username]);
     };
 
     Status.prototype.updateUI = function (usernames) {
