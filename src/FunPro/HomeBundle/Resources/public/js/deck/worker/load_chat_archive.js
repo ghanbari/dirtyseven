@@ -2,6 +2,8 @@ var window = self;
 importScripts('/bundles/goswebsocket/js/vendor/autobahn.min.js', '/bundles/goswebsocket/js/gos_web_socket_client.js');
 importScripts('/assets/mustache.js/mustache.js');
 importScripts('/assets/js-php-unserialize/php-unserialize.js');
+importScripts('/assets/emojione/lib/js/emojione.min.js');
+emojione.ascii = true;
 
 onmessage = function (event) {
     console.log('start work');
@@ -24,14 +26,14 @@ onmessage = function (event) {
 
                     if (preMessage == null) {
                         preMessage = payload;
-                        temp = payload.message;
+                        temp = emojione.shortnameToImage(payload.message);
                         continue;
                     }
 
                     if (payload.from == preMessage.from
                         && (new Date(payload.time)).getMinutes() == (new Date(preMessage.time)).getMinutes()
                     ) {
-                        temp = payload.message + '<br>' + temp;
+                        temp = emojione.shortnameToImage(payload.message) + '<br>' + temp;
                         continue;
                     } else {
                         var time = new Date(preMessage.time*1000);
@@ -46,7 +48,7 @@ onmessage = function (event) {
                         ) + archive;
 
                         preMessage = payload;
-                        temp = payload.message;
+                        temp = emojione.shortnameToImage(payload.message);
                     }
                 }
 

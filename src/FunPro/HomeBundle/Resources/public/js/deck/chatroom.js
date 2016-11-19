@@ -74,7 +74,7 @@ function showMessage(friend, payload, attachType) {
     attachType = attachType === undefined ? 'append' : attachType;
     var options = attachType === 'append' ? {append: true} : {prepend: true};
     var template = payload.from === $.jStorage.get('myUsername') ? $('#message-send') : $('#message-receive');
-    var message = '<p>' + payload.message + '</p>';
+    var message = '<p>' + emojione.shortnameToImage(payload.message) + '</p>';
     var time = new Date(payload.time*1000);
 
     if ((($('#chat-content-' + friend + ' .message:last-child').is('.message-send') && payload.from == $.jStorage.get('myUsername'))
@@ -82,13 +82,13 @@ function showMessage(friend, payload, attachType) {
         ) && (new Date($('#chat-content-' + friend + ' .message:last-child').data('time'))).getMinutes() == (new Date()).getMinutes()
     ) {
         $('#chat-content-' + friend + ' .message:last-child').find('.message-text p:last-child')
-            [attachType]('<br>' + payload.message);
+            [attachType]('<br>' + emojione.shortnameToImage(payload.message));
     } else {
         $('#chat-content-' + friend + ' .card-block').loadTemplate(
             template,
             {
                 username: payload.from,
-                message: message,
+                message: emojione.shortnameToImage(message),
                 timestamp: time,
                 time: time.getHours() + ':' + time.getMinutes()
             },

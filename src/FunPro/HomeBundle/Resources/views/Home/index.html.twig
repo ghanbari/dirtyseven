@@ -14,6 +14,7 @@
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/jquery-ui/themes/base/jquery-ui.css') }}">
     <link rel="stylesheet" media="screen and (orientation:portrait)" type="text/css" href="{{ asset('bundles/funprouser/css/portrait.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/font-awesome/css/font-awesome.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/emojione/assets/css/emojione.min.css') }}">
 </head>
 <body>
 <div class="change-orientation-warning" style="display: none">Sorry! This game work only in landscape mode.</div>
@@ -400,6 +401,7 @@
 <script src="{{ asset('assets/js-php-unserialize/php-unserialize.js') }}"></script>
 <script src="{{ asset('assets/moment/moment.js') }}"></script>
 <script src="{{ asset('assets/moment-duration-format/lib/moment-duration-format.js') }}"></script>
+<script src="{{ asset('assets/emojione/lib/js/emojione.min.js') }}"></script>
 {{ ws_client() }}
 <script src="{{ asset('bundles/funprohome/js/deck/messenger.js') }}"></script>
 <script src="{{ asset('bundles/funprohome/js/deck/main.js') }}"></script>
@@ -416,6 +418,7 @@
     $(document).ready(function () {
         $.jStorage.set('myUsername', '{{ app.user.username }}');
         avatars.load();
+        emojione.ascii = true;
     })
 </script>
 </body>
