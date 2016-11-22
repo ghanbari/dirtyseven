@@ -328,26 +328,30 @@ class GameManager
      */
     private function divisionCards($gameId, $players)
     {
-        $cards = array(
-            's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10', 'sj', 'sq', 'sk', 'sA',
-            'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10', 'hj', 'hq', 'hk', 'hA',
-            'd2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8', 'd9', 'd10', 'dj', 'dq', 'dk', 'dA',
-            'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10', 'cj', 'cq', 'ck', 'cA',
-        );
+        $spade = array('s2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10', 'sj', 'sq', 'sk', 'sA');
+        $heart = array('hA', 'hK', 'hQ', 'hJ', 'h10', 'h9', 'h8', 'h7', 'h6', 'h5', 'h4', 'h3', 'h2');
+        $diamond = array('d2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8', 'd9', 'd10', 'dj', 'dq', 'dk', 'dA');
+        $club = array('cA', 'cK', 'cQ', 'cJ', 'c10', 'c9', 'c8', 'c7', 'c6', 'c5', 'c4', 'c3', 'c2');
 
+        shuffle($spade);
+        shuffle($heart);
+        shuffle($diamond);
+        shuffle($club);
+        $cards = array_merge($spade, $heart, $diamond, $club);
         shuffle($cards);
-        shuffle($cards);
-        shuffle($cards);
+
         foreach ($players as $player) {
             $userCards = array();
             for ($j = 0; $j < 7; $j++) {
                 $userCards[] = array_pop($cards);
             }
-            $this->redis->sadd("Games:$gameId:$player:cards", $userCards);
+            $this->redis->sadd("Games:$gameId:$player:Cards", $userCards);
         }
 
-        $cards = array_flip(array_values($cards));
-        $this->redis->zadd("Games:$gameId:cards", $cards);
+        $topCard = array_pop($cards);
+        $this->redis->sadd("Games:$gameId:UpsetCards", $topCard);
+        $this->redis->hset("Games:$gameId", 'topCard', $topCard);
+        $this->redis->sadd("Games:$gameId:Cards", $cards);
     }
 
     /**
@@ -359,21 +363,60 @@ class GameManager
     {
         $game = $this->getGame($gameId);
         $invitations = $this->getGameInvitations($gameId);
-        $temp = array_keys(array_filter(
+        $players = array_keys(array_filter(
             $invitations,
             function ($value) {
                 return $value == 'accept';
             }
         ));
-        $players = array_keys($temp);
 
         array_push($players, $game['owner']);
 
         $this->divisionCards($gameId, $players);
 
-        $this->redis->hsetnx("Games:$gameId", 'seats', serialize($players));
-        $this->redis->hset("Games:$gameId", 'status', 'playing');
+        $this->redis->hmset(
+            "Games:$gameId",
+            array(
+                'direction' => -1,
+                'status' => 'playing',
+                'seats' => serialize(array_flip($players)),
+                'turn' => 0
+            )
+        );
+        $this->redis->zadd('PrivateGames', array($gameId => time()));
 
         return $players;
+    }
+
+    public function getPlayers($gameId)
+    {
+        $invitations = $this->getGameInvitations($gameId);
+        $accepted = array_keys(array_filter(
+            $invitations,
+            function ($value) {
+                return $value == 'accept';
+            }
+        ));
+
+        return $accepted;
+    }
+
+    public function finishGame($gameId)
+    {
+        $this->removeGame($gameId);
+    }
+
+    public function getUserCards($gameId, $username)
+    {
+        return $this->redis->smembers("Games:$gameId:$username:Cards");
+    }
+
+    public function getCountOfUserCards($gameId, $users)
+    {
+        $seats = array();
+        foreach ($users as $username => $seat) {
+            $seats[$username] = $this->redis->scard("Games:$gameId:$username:Cards");
+        }
+        return $seats;
     }
 }

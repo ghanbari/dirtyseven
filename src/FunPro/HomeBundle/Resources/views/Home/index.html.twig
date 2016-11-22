@@ -202,6 +202,26 @@
                 </div>
             </div>
         </div>
+
+        <div class="deck-container">
+            {#<div class="seat0">#}
+                {#<img src="{{ asset('images/38x38/default.png') }}" class="img img-fluid rounded-circle img-thumbnail">#}
+                {#<img src="{{ asset('images/38x38/default.png') }}" class="img img-fluid rounded-circle img-thumbnail">#}
+            {#</div>#}
+            {#<div>#}
+                {#<img src="{{ asset('images/38x38/default.png') }}" class="img img-fluid rounded-circle img-thumbnail seat1">#}
+                {#<img src="{{ asset('images/38x38/default.png') }}" class="img img-fluid rounded-circle img-thumbnail seat1">#}
+            {#</div>#}
+            {#<div class="seat2">#}
+                {#<img src="{{ asset('images/38x38/default.png') }}" class="img img-fluid rounded-circle img-thumbnail">#}
+                {#<img src="{{ asset('images/38x38/default.png') }}" class="img img-fluid rounded-circle img-thumbnail">#}
+            {#</div>#}
+            {#<div class="seat3">#}
+                {#<img src="{{ asset('images/38x38/default.png') }}" class="img img-fluid rounded-circle img-thumbnail">#}
+                {#<img src="{{ asset('images/38x38/default.png') }}" class="img img-fluid rounded-circle img-thumbnail">#}
+            {#</div>#}
+
+        </div>
     </div>
     <div id="chat-room-container">
         <div class="container-fluid">
@@ -402,6 +422,7 @@
 <script src="{{ asset('assets/moment/moment.js') }}"></script>
 <script src="{{ asset('assets/moment-duration-format/lib/moment-duration-format.js') }}"></script>
 <script src="{{ asset('assets/emojione/lib/js/emojione.min.js') }}"></script>
+<script src="{{ asset('assets/pokerjs/release/poker.min.js') }}"></script>
 {{ ws_client() }}
 <script src="{{ asset('bundles/funprohome/js/deck/messenger.js') }}"></script>
 <script src="{{ asset('bundles/funprohome/js/deck/main.js') }}"></script>
@@ -410,15 +431,67 @@
 <script src="{{ asset('bundles/funprohome/js/deck/chatroom.js') }}"></script>
 <script src="{{ asset('bundles/funprohome/js/deck/user_status.js') }}"></script>
 <script src="{{ asset('bundles/funprohome/js/deck/game.menu.js') }}"></script>
+<script src="{{ asset('bundles/funproseven/js/seven.js') }}"></script>
 <script type="text/javascript">
     if (!$.jStorage.storageAvailable()) {
         alert('Local storage is not supported by your browser. Please disable "Private Mode", or upgrade to a modern browser.')
+    } else {
+        $.jStorage.set('myUsername', '{{ app.user.username }}');
     }
 
     $(document).ready(function () {
-        $.jStorage.set('myUsername', '{{ app.user.username }}');
         avatars.load();
         emojione.ascii = true;
+
+//        for (var i = 2; i < 10; i++) {
+//            var cardHeight = $(document).height() / 6;
+//            var cardWidth = cardHeight / 1.333333;
+//            var card = $(Poker.getCardImage(cardHeight, 'h', i));
+//            card.addClass('varagh');
+//            var translateX = (i-3 - 7/2) * (cardWidth*0.55);
+//            // 80 = 50 menu height + 30 margin
+//            var translateY = ($(document).height() / 2) - (80 + cardHeight);
+//            var transform = 'rotate(0deg) translate3d('+translateX+'px, '+translateY+'px, 0px) rotateY(0deg)';
+//            card.css('transform', transform);
+//            $('.deck-container').append(card);
+//        }
+
+
+//        for (var i = 0; i < 7; i++) {
+//            var cardHeight = $(document).height() / 6;
+//            var cardWidth = cardHeight / 1.333333;
+//            var card = $(Poker.getBackImage(cardHeight));
+//            card.addClass('varagh');
+//            var translateX = (i - 7/2) * (cardWidth*0.55);
+//            // 80 = 50 menu height + 30 margin
+//            var translateY = ($(document).height() / -2) + (80 - (cardHeight/2));
+//            var transform = 'rotate(0deg) translate3d('+translateX+'px, '+translateY+'px, 0px) rotateX(180deg)';
+//            card.css('transform', transform);
+//            $('.deck-container').append(card);
+//        }
+
+
+//        //seat 1 & 3
+//        for (var i = 0; i < 7; i++) {
+//            var cardHeight = $(document).height() / 6;
+//            var cardWidth = cardHeight / 1.333333;
+//            var card = $(Poker.getBackImage(cardHeight));
+//            card.addClass('varagh');
+//            //seat1
+//            var translateX = ((i - 7/2) * cardHeight * 0.3) -50 - cardHeight/2;
+//            var translateY = ($(document).width() / 2) - 50;
+//            var rotate = 90;
+//
+//            //seat3
+////            var translateY = -1 * (($(document).width() / -2) + (cardWidth) + 50);
+////            var translateX = ((7/2 - i) * cardHeight * 0.3) +50 + cardHeight/2;
+////            var rotate = -90;
+//
+//            var transform = 'rotate('+rotate+'deg) translate3d('+translateX+'px, '+translateY+'px, 0px) rotateY(0deg)';
+//            card.css('transform', transform);
+//            $('.deck-container').append(card);
+//        }
+
     })
 </script>
 </body>

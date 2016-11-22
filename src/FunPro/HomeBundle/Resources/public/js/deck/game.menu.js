@@ -4,7 +4,11 @@ function showActiveGame() {
     session.call('games/get_active_game').then(
         function (result) {
             var data = result.data;
-            if (result.status.code == 1 && data.game.status == 'waiting') {
+            if (result.status.code != 1) {
+                return;
+            }
+
+            if (data.game.status == 'waiting') {
                 if (data.game.owner === $.jStorage.get('myUsername')) {
                     $('#game-invitations').data('game-name', data.game.name);
                     $('#game_invitation_expire').data('ttl', data.ttl);
@@ -27,6 +31,8 @@ function showActiveGame() {
                             $('#current-game-link').addClass('hidden-xs-up');
                             $('#game-invitations').removeData('game-name');
                             $('#my_invitation_expire').data('ttl', 0);
+                            $('.current-game').children().remove();
+                            $('#current-game').modal('toggle');
                         } else {
                             $('#my_invitation_expire').data('ttl', ttl - 1);
                             $('#my_invitation_expire').text(moment.duration(ttl, "seconds").format("mm:ss"));
@@ -51,7 +57,7 @@ function showActiveGame() {
                     $('#current-game').modal('toggle');
                 }
             } else {
-                //TODO: open game table and show cards
+                var game = Seven.create(session, data.id);
             }
         },
         function (error, desc) {
@@ -133,6 +139,9 @@ socket.on('socket/connect', function (session) {
 socket.on('socket/disconnect', function (error) {
     $('.game_invited_users').children().remove();
     $('.game-suggests').children().remove();
+    //clear active game
+    $('.current-game').children().remove();
+    $('#current-game').modal('toggle');
 });
 
 $('#current-game').on('game_status', function (event, payload) {
@@ -151,7 +160,9 @@ $('#current-game').on('game_status', function (event, payload) {
             );
         });
     } else {
-        //TODO: start or resume game?
+        $('.current-game').children().remove();
+        $('#current-game .close').click();
+        var game = Seven.create(session, payload.game.id);
     }
 });
 
@@ -329,6 +340,20 @@ $('#cancel_current_game').click(function (event) {
 
             $('#current-game .close').click();
             $('#current-game').removeData('game-id');
+        },
+        function (error, desc) {
+            messenger.notification({from: 'Bot', message: 'Sorry, a error occur, if it occur again, please report to us.'});
+            messenger.notification({from: 'Bot', message: error.toString() + ', ' + desc.toString()});
+        }
+    );
+});
+
+$('#startGame').click(function() {
+    session.call('games/start').then(
+        function (result) {
+            $('.game-invitations').children().remove();
+            $('#game-invitations').modal('toggle');
+            messenger.notification({from: 'Bot', message: result.status.message});
         },
         function (error, desc) {
             messenger.notification({from: 'Bot', message: 'Sorry, a error occur, if it occur again, please report to us.'});

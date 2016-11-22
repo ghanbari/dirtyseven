@@ -1,0 +1,14 @@
+fun_pro.topic_seven:
+    channel: game/seven/chat/{gameId}
+    handler:
+        callback: 'game.seven.topic'
+    requirements:
+        gameId:
+            pattern: "[0-9A-Za-z_-]"
+fun_pro.rpc_seven:
+    channel: game/seven/{method}
+    handler:
+        callback: 'game.seven.rpc'
+    requirements:
+        method:
+            pattern: "[a-z_]+"

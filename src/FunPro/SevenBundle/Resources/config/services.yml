@@ -1,0 +1,12 @@
+services:
+    fun_pro_seven.seven_topic:
+        class: FunPro\SevenBundle\Topic\SevenTopic
+        arguments: ["@fun_pro_core.manager.game", "@fun_pro_user.client_helper"]
+        tags:
+            - { name: gos_web_socket.topic }
+
+    fun_pro_seven.seven_rpc:
+        class: FunPro\SevenBundle\RPC\SevenGame
+        arguments: ["@fun_pro_core.manager.game", "@fun_pro_user.client_helper"]
+        tags:
+            - { name: gos_web_socket.rpc }

@@ -49,6 +49,8 @@ class ChatTopic implements TopicInterface
                 'message' => 'You not allowed to subscribe in this room',
                 'type' => 'notification',
                 'from' => 'Bot',
+                'channel' => $request->getAttributes()->get('username'),
+                'username' => $username,
             );
             $this->clientHelper->getPublicTopic()->broadcast($error);
             $topic->remove($connection);

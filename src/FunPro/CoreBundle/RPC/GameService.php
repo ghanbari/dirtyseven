@@ -388,4 +388,42 @@ class GameService implements RpcInterface
             'data' => array(),
         );
     }
+
+    public function start(ConnectionInterface $connection, WampRequest $request, $params)
+    {
+        $user = $this->clientHelper->getCurrentUser($connection);
+        $game = $this->gameManager->getActiveGameCreatedBy($user->getUsername());
+
+        if (!$game or $game['game']['status'] !== Game::STATUS_WAITING) {
+            return array(
+                'status' => array('message' => 'Your game started or is not exists', 'code' => -1),
+                'data' => array(),
+            );
+        }
+
+        $invitations = $this->gameManager->getGameInvitations($game['id']);
+        $accepted = array_keys(array_filter(
+            $invitations,
+            function ($value) {
+                return $value == 'accept';
+            }
+        ));
+
+        if (count($accepted) < 1) {
+            return array(
+                'status' => array('message' => 'You must add at least one friend', 'code' => -2),
+                'data' => array(),
+            );
+        }
+
+        $this->gameManager->startGame($game['id']);
+        $accepted[] = $user->getUsername();
+        $message = array('type' => 'game_status', 'status' => 'started', 'game' => $game);
+        $this->clientHelper->getPublicTopic()->broadcast($message, array(), $this->clientHelper->getUsersSessionId($accepted));
+
+        return array(
+            'status' => array('message' => 'Game started', 'code' => 1),
+            'data' => array(),
+        );
+    }
 }

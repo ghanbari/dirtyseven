@@ -72,7 +72,7 @@ var avatars = (function () {
 })();
 
 $(document).on('DOMNodeInserted', function(e) {
-    if ($(e.target).has('.avatar').length) {
+    if ($(e.target).has('.avatar').length || $(e.target).hasClass('avatar')) {
         avatars.load();
     }
 });

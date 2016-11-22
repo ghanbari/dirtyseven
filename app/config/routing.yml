@@ -1,3 +1,7 @@
+fun_pro_seven:
+    resource: "@FunProSevenBundle/Resources/config/routing.yml"
+    prefix:   /
+
 fun_pro_home_res:
     resource: "@FunProHomeBundle/Resources/config/routing.yml"
     type:     rest
