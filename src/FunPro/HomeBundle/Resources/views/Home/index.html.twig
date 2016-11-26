@@ -204,6 +204,11 @@
         </div>
 
         <div class="deck-container">
+            <div class="seat0-loading"></div>
+            <div class="seat1-loading"></div>
+            <div class="seat2-loading"></div>
+            <div class="seat3-loading"></div>
+            <div id="mid-dropable-aria"></div>
             {#<div class="seat0">#}
                 {#<img src="{{ asset('images/38x38/default.png') }}" class="img img-fluid rounded-circle img-thumbnail">#}
                 {#<img src="{{ asset('images/38x38/default.png') }}" class="img img-fluid rounded-circle img-thumbnail">#}
@@ -436,6 +441,7 @@
     if (!$.jStorage.storageAvailable()) {
         alert('Local storage is not supported by your browser. Please disable "Private Mode", or upgrade to a modern browser.')
     } else {
+        var myUsername = '{{ app.user.username }}';
         $.jStorage.set('myUsername', '{{ app.user.username }}');
     }
 

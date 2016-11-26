@@ -7,6 +7,6 @@ services:
 
     fun_pro_seven.seven_rpc:
         class: FunPro\SevenBundle\RPC\SevenGame
-        arguments: ["@fun_pro_core.manager.game", "@fun_pro_user.client_helper"]
+        arguments: ["@fun_pro_core.manager.game", "@fun_pro_user.client_helper", "@fun_pro_seven.seven_topic"]
         tags:
             - { name: gos_web_socket.rpc }

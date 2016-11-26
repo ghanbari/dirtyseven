@@ -35,6 +35,11 @@ class ClientHelper
         return $this->topicManager->getTopic('chat/public');
     }
 
+    public function getGameTopic($gameName, $gameId)
+    {
+        return $this->topicManager->getTopic("game/$gameName/chat/$gameId");
+    }
+
     public function getCurrentUser(ConnectionInterface $connection)
     {
         $user = $this->clientManipulator->getClient($connection);

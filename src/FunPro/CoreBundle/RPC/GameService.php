@@ -372,7 +372,7 @@ class GameService implements RpcInterface
         $this->clientHelper->getPublicTopic()->broadcast($msg, array(), array($ownerConnection->WAMP->sessionId));
 
         if (count($accepted) === 4) {
-            $this->gameManager->startGame($gameId);
+            $this->gameManager->prepareGame($gameId);
             $message = array('type' => 'game_status', 'status' => 'started', 'gameId' => $gameId);
             $this->clientHelper->getPublicTopic()->broadcast($message, array(), $sessions);
         } else {
@@ -416,7 +416,7 @@ class GameService implements RpcInterface
             );
         }
 
-        $this->gameManager->startGame($game['id']);
+        $this->gameManager->prepareGame($game['id']);
         $accepted[] = $user->getUsername();
         $message = array('type' => 'game_status', 'status' => 'started', 'game' => $game);
         $this->clientHelper->getPublicTopic()->broadcast($message, array(), $this->clientHelper->getUsersSessionId($accepted));

@@ -7,11 +7,15 @@ use FunPro\CoreBundle\Model\Game;
 use FunPro\UserBundle\Client\ClientHelper;
 use Gos\Bundle\WebSocketBundle\Router\WampRequest;
 use Gos\Bundle\WebSocketBundle\Topic\TopicInterface;
+use Gos\Bundle\WebSocketBundle\Topic\TopicPeriodicTimerInterface;
+use Gos\Bundle\WebSocketBundle\Topic\TopicPeriodicTimerTrait;
 use Ratchet\ConnectionInterface;
 use Ratchet\Wamp\Topic;
 
-class SevenTopic implements TopicInterface
+class SevenTopic implements TopicInterface, TopicPeriodicTimerInterface
 {
+    use TopicPeriodicTimerTrait;
+
     /**
      * @var GameManager
      */
@@ -28,6 +32,40 @@ class SevenTopic implements TopicInterface
     }
 
     /**
+     * @param Topic $topic
+     *
+     * @return mixed
+     */
+    public function registerPeriodicTimer(Topic $topic)
+    {
+    }
+
+    public function addPeriodicTimmer(Topic $topic, $gameId)
+    {
+        $goNextTurn = function () use ($topic, $gameId) {
+            //give yellow card if player not played
+
+            //must use transaction
+            $turn = $this->gameManager->getTurn($gameId);
+            $nextTurn = $this->gameManager->nextTurn($gameId);
+            $this->gameManager->getPenalty($gameId, $turn, 1);
+            $topic->broadcast(array('type' => 'turn', 'player' => $nextTurn, 'penalty' => $turn));
+        };
+
+        if (!$this->periodicTimer->isPeriodicTimerActive($this, 'turn')) {
+            $this->periodicTimer->addPeriodicTimer($this, 'turn', 10, $goNextTurn);
+        } else {
+            echo 'timer is active, can not register new timer';
+        }
+    }
+
+    public function removePeriodicTimer()
+    {
+        $this->periodicTimer->cancelPeriodicTimer($this, 'turn');
+        return $this;
+    }
+
+    /**
      * @param  ConnectionInterface $connection
      * @param  Topic               $topic
      * @param WampRequest          $request
@@ -38,8 +76,24 @@ class SevenTopic implements TopicInterface
         $gameId = $request->getAttributes()->get('gameId');
 
         $game = $this->gameManager->getUserGame($user->getUsername());
-        if (!$game or $game['id'] != $gameId or $game['game']['status'] !== Game::STATUS_WAITING) {
+        if (!$game or $game['id'] != $gameId or $game['game']['status'] == Game::STATUS_FINISHED) {
             $topic->remove($connection);
+        }
+
+        $players = $this->gameManager->getPlayers($gameId);
+        if ($topic->count() == count($players)
+            and in_array($game['game']['status'], array(Game::STATUS_PREPARE, Game::STATUS_PAUSED))
+        ) {
+            if ($game['game']['status'] == Game::STATUS_PREPARE) {
+                $this->gameManager->startGame($gameId);
+            } else {
+                $this->gameManager->resumeGame($gameId);
+            }
+
+            $turn = $this->gameManager->getTurn($game['id']);
+            $topic->broadcast(array('type' => 'turn', 'player' => $turn));
+
+            $this->addPeriodicTimmer($topic, $gameId);
         }
     }
 
@@ -53,18 +107,17 @@ class SevenTopic implements TopicInterface
         $gameId = $request->getAttributes()->get('gameId');
         $game = $this->gameManager->getGame($gameId);
 
-        if (!$game or $game['game']['status'] != Game::STATUS_PLAYING or !isset($game['game']['startedAt'])) {
+        if (!$game or $game['status'] != Game::STATUS_PLAYING) {
             return;
         }
 
-        $players = $this->gameManager->getPlayers($gameId);
-
-        if (($game['game']['startedAt'] + 300) < time() and $topic->count() < 2) {
-            $this->gameManager->finishGame($gameId);
+        if ($topic->count() == 1) {
+            $this->removePeriodicTimer();
+            $this->gameManager->pauseGame($gameId);
+            $message = array('type' => 'game_status', 'status' => 'paused', 'gameId' => $gameId);
+            $players = $this->gameManager->getPlayers($gameId);
+            $this->clientHelper->getPublicTopic()->broadcast($message, array(), $this->clientHelper->getUsersSessionId($players));
         }
-
-        $message = array('type' => 'game_status', 'status' => 'finished', 'gameId' => $gameId);
-        $this->clientHelper->getPublicTopic()->broadcast($message, array(), $this->clientHelper->getUsersSessionId($players));
     }
 
     /**
