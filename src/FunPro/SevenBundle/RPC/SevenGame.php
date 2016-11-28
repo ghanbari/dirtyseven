@@ -83,10 +83,35 @@ class SevenGame implements RpcInterface
 
         $playedCard = $params['card'];
         try {
-            $this->gameManager->isCorrect($game['id'], $user->getUsername(), $playedCard);
+            $result = $this->gameManager->isCorrect($game['id'], $user->getUsername(), $playedCard);
             $this->sevenTopic->addPeriodicTimmer($gameTopic, $game['id']);
-        } catch (WrongCardException $e) {
 
+            if ($result['penalty']) {
+                foreach ($result['penalty'] as $username => $cards) {
+                    $userConnection = $this->clientHelper->getConnection($username);
+
+                    if ($userConnection) {
+                        $gameTopic->broadcast(
+                            array('type' => 'penalty', 'cards' => $cards),
+                            array(),
+                            array($userConnection->WAMP->sessionId)
+                        );
+                    }
+                }
+            }
+
+            $gameTopic->broadcast(array(
+                'type' => 'playing',
+                'turn' => $this->gameManager->getTurn($game['id']),
+                'previousTurn' => $result['previousTurn'],
+                'topCard' => $result['topCard'],
+                'cards' => $this->gameManager->getCountOfUsersCards($game['id'])
+            ));
+        } catch (WrongCardException $e) {
+            return array(
+                'status' => array('message' => 'Ok', 'code' => -1),
+                'data' => array('penalties' => $e->getPenalties()),
+            );
         }
 
         return array(
@@ -118,12 +143,18 @@ class SevenGame implements RpcInterface
             );
         }
 
+        $previousTurn = $this->gameManager->getTurn($game['id']);
         $card = $this->gameManager->getPenalty($game['id'], $user->getUsername(), 1);
-        $this->gameManager->nextTurn($game['id']);
+        $turn = $this->gameManager->nextTurn($game['id']);
         $this->sevenTopic->addPeriodicTimmer($gameTopic, $game['id']);
 
         $userCards = $this->gameManager->getCountOfUserCards($game['id'], $user->getUsername());
-        $gameTopic->broadcast(array('username' => $user->getUsername(), 'count' => $userCards, 'type' => 'played'));
+        $gameTopic->broadcast(array(
+            'type' => 'playing',
+            'turn' => $turn,
+            'previousTurn' => $previousTurn,
+            'cards' => array($previousTurn => $userCards),
+        ));
 
         return array(
             'status' => array('message' => 'Ok', 'code' => 1),

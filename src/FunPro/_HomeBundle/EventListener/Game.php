@@ -108,8 +108,9 @@ class Game implements RpcInterface
             $users = array();
             $topic = $this->topicManager->getTopic('chat/public');
             foreach ($members as $member) {
-                $u = $this->clientManipulator->findByUsername($topic, $member);
-                $users[] = $u['connection']->WAMP->sessionId;
+                if ($u = $this->clientManipulator->findByUsername($topic, $member)) {
+                    $users[] = $u['connection']->WAMP->sessionId;
+                }
             }
 
             $topic->broadcast(array('room'=>$gameRoom, 'type'=>'new'), [], $users);

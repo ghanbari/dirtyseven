@@ -67,7 +67,7 @@ class GameManager
         $this->redis->hset('Users:Games', $ownerUsername, $gameId);
         $this->redis->hmset("Games:$gameId", $game);
 
-        $this->redis->expire("Games:$gameId", 3600);
+//        $this->redis->expire("Games:$gameId", 3600);
         $this->eventDispatcher->dispatch(Events::CHANGE_USER_STATUS, new UserStatusEvent($ownerUsername, User::STATUS_INVITING));
 
         return array(
@@ -266,7 +266,7 @@ class GameManager
     {
         $ttl = $this->redis->ttl("Games:$gameId");
         $this->redis->hset("PrivateGames:$gameId:invitations", $username, 'waiting');
-        $this->redis->expire("PrivateGames:$gameId:invitations", $ttl);
+//        $this->redis->expire("PrivateGames:$gameId:invitations", $ttl);
         $this->redis->zadd("GameInvitation:$username", array($gameId => time() + $ttl));
         $this->redis->zremrangebyscore("GameInvitation:$username", 0, time());
     }
@@ -279,7 +279,7 @@ class GameManager
     {
         $ttl = $this->redis->ttl("Games:$gameId");
         $this->redis->hdel("PrivateGames:$gameId:invitations", $username);
-        $this->redis->expire("PrivateGames:$gameId:invitations", $ttl);
+//        $this->redis->expire("PrivateGames:$gameId:invitations", $ttl);
         $this->redis->zrem("GameInvitation:$username", $gameId);
         if ($this->redis->hget('Users:Games', $username) == $gameId) {
             $this->redis->hdel('Users:Games', $username);
@@ -310,7 +310,7 @@ class GameManager
     {
         $ttl = $this->redis->ttl("Games:$gameId");
         $this->redis->hset("PrivateGames:$gameId:invitations", $username, $answer);
-        $this->redis->expire("PrivateGames:$gameId:invitations", $ttl);
+//        $this->redis->expire("PrivateGames:$gameId:invitations", $ttl);
         $this->redis->zrem("GameInvitation:$username", $gameId);
 
         if ($answer === 'accept') {
@@ -434,17 +434,85 @@ class GameManager
         }
     }
 
+    public function clearUpsetCards($gameId)
+    {
+        $this->redis->watch("Games:$gameId:UpsetCards");
+        $this->redis->watch("Games:$gameId");
+        $cards = $this->redis->smembers("Games:$gameId:UpsetCards");
+        $topCard = $this->redis->hget("Games:$gameId", 'topCard');
+        $this->redis->multi();
+        $this->redis->srem("Games:$gameId:UpsetCards", $cards);
+        $this->redis->sadd("Games:$gameId:Cards", $cards);
+        if ($topCard) {
+            $this->redis->smove("Games:$gameId:Cards", "Games:$gameId:UpsetCards", $topCard);
+        }
+        $this->redis->exec();
+    }
+
+    public function nextTurnAndPenalty($gameId)
+    {
+        if ($this->redis->scard("Games:$gameId:UpsetCards") == 0) {
+            $this->clearUpsetCards($gameId);
+        }
+
+        $turn = $this->getTurn($gameId);
+        $this->redis->watch("Games:$gameId:Players");
+        $this->redis->watch("Games:$gameId:Cards");
+        $this->redis->watch("Games:$gameId:$turn:Cards");
+        $direction = $this->redis->hget("Games:$gameId", 'direction');
+        $this->redis->multi();
+        //penalty
+        $this->redis->spop("Games:$gameId:Cards");
+        if ($direction > 0) {
+            //nextTurn
+            $this->redis->rpoplpush("Games:$gameId:Players", "Games:$gameId:Players");
+        } else {
+            //nextTurn
+            $this->redis->lpop("Games:$gameId:Players");
+        }
+        $this->redis->hset("Games:$gameId", 'nextTurnAt', time() + 10);
+        $res = $this->redis->exec();
+        $penalty = $res[0];
+        $nextTurn = $res[1];
+        //penalty
+        if ($penalty) {
+            $this->redis->sadd("Games:$gameId:$turn:Cards", $penalty);
+        }
+
+        //nextTurn
+        if ($direction < 0) {
+            $this->redis->rpush("Games:$gameId:Players", $nextTurn);
+        }
+
+        return array(
+            'penalty' => $penalty,
+            'nextTurn' => $nextTurn,
+            'res' => $res,
+            'turn' => $turn,
+        );
+    }
+
     public function getPenalty($gameId, $username, $count=1)
     {
+        if ($this->redis->scard("Games:$gameId:UpsetCards") == 0) {
+            $this->clearUpsetCards($gameId);
+        }
+
         //on redis 3.2
 //        $randCards = $this->redis->spop("Games:$gameId:Cards", $count);
 
         $randCards = array();
         for ($i = 0; $i < $count; $i++) {
-            $randCards[] = $this->redis->spop("Games:$gameId:Cards");
+            $penalty = $this->redis->spop("Games:$gameId:Cards");
+            if ($penalty) {
+                $randCards[] = $penalty;
+            }
         }
 
-        $this->redis->sadd("Games:$gameId:$username:Cards", $randCards);
+        if ($randCards) {
+            $this->redis->sadd("Games:$gameId:$username:Cards", $randCards);
+        }
+
         return $randCards;
     }
 
@@ -453,10 +521,11 @@ class GameManager
         return $this->getTurn($gameId) === $username;
     }
 
-    public function isCorrect($gameId, $username, $cardName, $extra=array())
+    public function isCorrect($gameId, $username, $cardName, array $extra = array())
     {
         $result = array();
         $result['top'] = $cardName;
+        $result['previousTurn'] = $this->getTurn($gameId);
 
         $playedCardType = substr($cardName, 0, 1);
         $playedCardNumber = substr($cardName, 1);
@@ -465,23 +534,22 @@ class GameManager
         $topCardType = substr($topCard, 0, 1);
         $topCardNumber = substr($topCard, 1);
 
-        if ($playedCardNumber != $topCardNumber and $playedCardType != $topCardType and $topCardNumber !== 'j') {
+        if ($playedCardNumber !== $topCardNumber and $playedCardType !== $topCardType and $topCardNumber !== 'j') {
             $penalties = $this->getPenalty($gameId, $username);
             throw (new WrongCardException())->setPenalties($penalties);
         }
 
-        if ($topCardNumber == '7') {
-            if ($playedCardNumber != '7') {
-                $penaltyCount = $this->redis->hget("Games:$gameId", 'penalty');
-                $this->redis->hset("Games:$gameId", 'penalty', 0);
-                $penalties = $this->getPenalty($gameId, $username, $penaltyCount);
-                throw (new WrongCardException())->setPenalties($penalties);
-            }
+        if ($topCardNumber === '7' and $playedCardNumber !== '7') {
+            $penaltyCount = $this->redis->hget("Games:$gameId", 'penalty');
+            $this->redis->hset("Games:$gameId", 'penalty', 0);
+            $penalties = $this->getPenalty($gameId, $username, $penaltyCount);
+            throw (new WrongCardException())->setPenalties($penalties);
         }
 
         switch ($playedCardNumber) {
             case '2':
-                $this->getPenalty($gameId, $extra['target'], 1);
+                $penalty = $this->getPenalty($gameId, $extra['target'], 1);
+                $result['penalty'] = array($extra['target'] => $penalty);
                 $this->nextTurn($gameId);
                 break;
             case '7':
@@ -511,6 +579,8 @@ class GameManager
 
         $this->redis->hset("Games:$gameId", 'topCard', $cardName);
         $this->redis->smove("Games:$gameId:$username:Cards", "Games:$gameId:UpsetCards", $cardName);
+
+        return $result;
     }
 
     public function pauseGame($gameId)
@@ -528,8 +598,12 @@ class GameManager
         return $this->redis->smembers("Games:$gameId:$username:Cards");
     }
 
-    public function getCountOfUsersCards($gameId, $users)
+    public function getCountOfUsersCards($gameId, array $users = array())
     {
+        if (empty($users)) {
+            $users = array_flip($this->getPlayers($gameId));
+        }
+
         $seats = array();
         foreach ($users as $username => $seat) {
             $seats[$username] = $this->redis->scard("Games:$gameId:$username:Cards");

@@ -46,10 +46,22 @@ class SevenTopic implements TopicInterface, TopicPeriodicTimerInterface
             //give yellow card if player not played
 
             //must use transaction
-            $turn = $this->gameManager->getTurn($gameId);
-            $nextTurn = $this->gameManager->nextTurn($gameId);
-            $this->gameManager->getPenalty($gameId, $turn, 1);
-            $topic->broadcast(array('type' => 'turn', 'player' => $nextTurn, 'penalty' => $turn));
+            $data = $this->gameManager->nextTurnAndPenalty($gameId);
+
+            $userSession = $this->clientHelper->getConnection($data['turn']);
+            if ($userSession) {
+                $topic->broadcast(
+                    array('type' => 'penalty', 'cards' => array($data['penalty'])),
+                    array(),
+                    array($userSession->WAMP->sessionId)
+                );
+            }
+            $topic->broadcast(array(
+                'type' => 'playing',
+                'turn' => $data['nextTurn'],
+                'previousTurn' => $data['turn'],
+                'cards' => array($data['turn'] => $this->gameManager->getCountOfUserCards($gameId, $data['turn']))
+            ));
         };
 
         if (!$this->periodicTimer->isPeriodicTimerActive($this, 'turn')) {
@@ -91,7 +103,7 @@ class SevenTopic implements TopicInterface, TopicPeriodicTimerInterface
             }
 
             $turn = $this->gameManager->getTurn($game['id']);
-            $topic->broadcast(array('type' => 'turn', 'player' => $turn));
+            $topic->broadcast(array('type' => 'playing', 'turn' => $turn));
 
             $this->addPeriodicTimmer($topic, $gameId);
         }
@@ -114,9 +126,6 @@ class SevenTopic implements TopicInterface, TopicPeriodicTimerInterface
         if ($topic->count() == 1) {
             $this->removePeriodicTimer();
             $this->gameManager->pauseGame($gameId);
-            $message = array('type' => 'game_status', 'status' => 'paused', 'gameId' => $gameId);
-            $players = $this->gameManager->getPlayers($gameId);
-            $this->clientHelper->getPublicTopic()->broadcast($message, array(), $this->clientHelper->getUsersSessionId($players));
         }
     }
 

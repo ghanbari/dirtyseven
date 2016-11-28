@@ -1,5 +1,7 @@
 //TODO: create a class that capsulise gameInvitations and current active game
 
+var currentGameTimer;
+
 function showActiveGame() {
     session.call('games/get_active_game').then(
         function (result) {
@@ -23,11 +25,11 @@ function showActiveGame() {
                     $('#my_invitation_expire').data('ttl', data.ttl);
                     $('#current-game').data('game-id', data.id);
 
-                    var ttlTimer = setInterval(function () {
+                    currentGameTimer = setInterval(function () {
                         var ttl = $('#my_invitation_expire').data('ttl');
                         if (ttl == -1) {
-                            clearInterval(ttlTimer);
-                            ttlTimer = undefined;
+                            clearInterval(currentGameTimer);
+                            currentGameTimer = undefined;
                             $('#current-game-link').addClass('hidden-xs-up');
                             $('#game-invitations').removeData('game-name');
                             $('#my_invitation_expire').data('ttl', 0);
@@ -141,7 +143,7 @@ socket.on('socket/disconnect', function (error) {
     $('.game-suggests').children().remove();
     //clear active game
     $('.current-game').children().remove();
-    $('#current-game').modal('toggle');
+    $('#current-game .close').click();
 });
 
 $('#current-game').on('game_status', function (event, payload) {
@@ -159,7 +161,8 @@ $('#current-game').on('game_status', function (event, payload) {
                 {append: true}
             );
         });
-    } else {
+    } else if (payload.status == 'prepare') {
+        clearInterval(currentGameTimer);
         $('.current-game').children().remove();
         $('#current-game .close').click();
         var game = Seven.create(session, payload.game.id);

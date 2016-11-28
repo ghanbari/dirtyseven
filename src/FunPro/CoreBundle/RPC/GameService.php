@@ -418,7 +418,7 @@ class GameService implements RpcInterface
 
         $this->gameManager->prepareGame($game['id']);
         $accepted[] = $user->getUsername();
-        $message = array('type' => 'game_status', 'status' => 'started', 'game' => $game);
+        $message = array('type' => 'game_status', 'status' => 'prepare', 'game' => $game);
         $this->clientHelper->getPublicTopic()->broadcast($message, array(), $this->clientHelper->getUsersSessionId($accepted));
 
         return array(
