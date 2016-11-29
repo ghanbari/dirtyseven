@@ -164,7 +164,7 @@ class UserService implements RpcInterface
         $accepted[] = $gameOwnerUsername;
         foreach ($accepted as $playerUsername) {
             $player = $this->clientManipulator->findByUsername($publicTopic, $playerUsername);
-            if ($player) {
+            if ($player and array_key_exists('connection', $player)) {
                 $sessions[] = $player['connection']->WAMP->sessionId;
             }
         }

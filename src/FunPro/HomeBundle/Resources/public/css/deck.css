@@ -80,7 +80,6 @@ a.disabled {
     position: absolute;
     bottom: 40%;
     left: 50%;
-    border: 1px solid red;
     transform: translateY(50%) translateX(-50%);
 }
 
@@ -102,7 +101,7 @@ a.disabled {
 .seat2 {
     position:absolute;
     left: 50%;
-    top: 58px !important;
+    top: 58px;
 }
 
 .seat2-loading {

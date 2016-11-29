@@ -45,6 +45,8 @@ class SevenTopic implements TopicInterface, TopicPeriodicTimerInterface
         $goNextTurn = function () use ($topic, $gameId) {
             //give yellow card if player not played
 
+            #FIXME: if penalty > 0 -> getPenalty()
+
             //must use transaction
             $data = $this->gameManager->nextTurnAndPenalty($gameId);
 

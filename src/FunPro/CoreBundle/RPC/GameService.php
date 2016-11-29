@@ -338,7 +338,9 @@ class GameService implements RpcInterface
             $this->gameManager->setAnswer($gameId, $username, $answer);
             $msg = array('type' => 'answer_to_game_invitation', 'from' => $username, 'answer' => $answer);
             $ownerConnection = $this->clientHelper->getConnection($game['owner']);
-            $this->clientHelper->getPublicTopic()->broadcast($msg, array(), array($ownerConnection->WAMP->sessionId));
+            if ($ownerConnection) {
+                $this->clientHelper->getPublicTopic()->broadcast($msg, array(), array($ownerConnection->WAMP->sessionId));
+            }
             return array(
                 'status' => array('message' => 'You are removed from list', 'code' => 2),
                 'data' => array(),
@@ -369,7 +371,9 @@ class GameService implements RpcInterface
 
         $msg = array('type' => 'answer_to_game_invitation', 'from' => $username, 'answer' => $answer);
         $ownerConnection = $this->clientHelper->getConnection($game['owner']);
-        $this->clientHelper->getPublicTopic()->broadcast($msg, array(), array($ownerConnection->WAMP->sessionId));
+        if ($ownerConnection) {
+            $this->clientHelper->getPublicTopic()->broadcast($msg, array(), array($ownerConnection->WAMP->sessionId));
+        }
 
         if (count($accepted) === 4) {
             $this->gameManager->prepareGame($gameId);

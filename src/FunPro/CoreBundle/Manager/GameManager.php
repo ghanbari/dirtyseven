@@ -329,10 +329,10 @@ class GameManager
      */
     private function divisionCards($gameId, $players)
     {
-        $spade = array('s2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10', 'sj', 'sq', 'sk', 'sA');
-        $heart = array('hA', 'hK', 'hQ', 'hJ', 'h10', 'h9', 'h8', 'h7', 'h6', 'h5', 'h4', 'h3', 'h2');
-        $diamond = array('d2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8', 'd9', 'd10', 'dj', 'dq', 'dk', 'dA');
-        $club = array('cA', 'cK', 'cQ', 'cJ', 'c10', 'c9', 'c8', 'c7', 'c6', 'c5', 'c4', 'c3', 'c2');
+        $spade = array('s2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10', 'sj', 'sq', 'sk', 'sa');
+        $heart = array('ha', 'hk', 'hq', 'hj', 'h10', 'h9', 'h8', 'h7', 'h6', 'h5', 'h4', 'h3', 'h2');
+        $diamond = array('d2', 'd3', 'd4', 'd5', 'd6', 'd7', 'd8', 'd9', 'd10', 'dj', 'dq', 'dk', 'da');
+        $club = array('ca', 'ck', 'cq', 'cj', 'c10', 'c9', 'c8', 'c7', 'c6', 'c5', 'c4', 'c3', 'c2');
 
         shuffle($spade);
         shuffle($heart);
@@ -451,7 +451,7 @@ class GameManager
 
     public function nextTurnAndPenalty($gameId)
     {
-        if ($this->redis->scard("Games:$gameId:UpsetCards") == 0) {
+        if ($this->redis->scard("Games:$gameId:Cards") == 0) {
             $this->clearUpsetCards($gameId);
         }
 
@@ -524,32 +524,35 @@ class GameManager
     public function isCorrect($gameId, $username, $cardName, array $extra = array())
     {
         $result = array();
-        $result['top'] = $cardName;
-        $result['previousTurn'] = $this->getTurn($gameId);
+        $result['topCard'] = $cardName;
 
-        $playedCardType = substr($cardName, 0, 1);
-        $playedCardNumber = substr($cardName, 1);
+        $playedCardType = strtolower(substr($cardName, 0, 1));
+        $playedCardNumber = strtolower(substr($cardName, 1));
 
         $topCard = $this->redis->hget("Games:$gameId", 'topCard');
         $topCardType = substr($topCard, 0, 1);
         $topCardNumber = substr($topCard, 1);
 
-        if ($playedCardNumber !== $topCardNumber and $playedCardType !== $topCardType and $topCardNumber !== 'j') {
+        if ($playedCardNumber !== $topCardNumber and $playedCardType !== $topCardType and $playedCardNumber !== 'j') {
             $penalties = $this->getPenalty($gameId, $username);
+            $this->nextTurn($gameId);
             throw (new WrongCardException())->setPenalties($penalties);
         }
 
-        if ($topCardNumber === '7' and $playedCardNumber !== '7') {
+        if ($this->redis->hget("Games:$gameId", 'penalty') > 0 and $playedCardNumber !== '7') {
             $penaltyCount = $this->redis->hget("Games:$gameId", 'penalty');
             $this->redis->hset("Games:$gameId", 'penalty', 0);
             $penalties = $this->getPenalty($gameId, $username, $penaltyCount);
+            $this->nextTurn($gameId);
             throw (new WrongCardException())->setPenalties($penalties);
         }
 
         switch ($playedCardNumber) {
             case '2':
-                $penalty = $this->getPenalty($gameId, $extra['target'], 1);
-                $result['penalty'] = array($extra['target'] => $penalty);
+                if (is_array($extra) and array_key_exists('target', $extra)) {
+                    $penalty = $this->getPenalty($gameId, $extra['target'], 1);
+                    $result['penalty'] = array($extra['target'] => $penalty);
+                }
                 $this->nextTurn($gameId);
                 break;
             case '7':
@@ -561,13 +564,19 @@ class GameManager
                 break;
             case '10':
                 $this->redis->hset("Games:$gameId", 'direction', $this->redis->hget("Games:$gameId", 'direction') * -1);
-                // we should not call nextTurn after change direction
+                // we should not call nextTurn after change direction, only in 2 player games
+                #FIXME: maybe count of players be 4, but 2 player finished their cards
+                if ($this->redis->llen("Games:$gameId:Players") == 2) {
+                    $this->nextTurn($gameId);
+                }
                 break;
             case 'j':
                 // if user select heart, change top card to h1
-                $this->redis->hset("Games:$gameId", 'topCard', '1' . $extra['color']);
+                if (is_array($extra) and array_key_exists('color', $extra)) {
+                    $this->redis->hset("Games:$gameId", 'topCard', $extra['color'] . '1');
+                    $result['topCard'] = $extra['color'] . '1';
+                }
                 $this->nextTurn($gameId);
-                $result['top'] = '1' . $extra['color'];
                 break;
             case 'a':
                 $this->nextTurn($gameId);

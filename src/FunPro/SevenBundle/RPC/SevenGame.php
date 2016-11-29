@@ -82,11 +82,12 @@ class SevenGame implements RpcInterface
         }
 
         $playedCard = $params['card'];
+        $extra = array_key_exists('extra', $params) ? $params['extra'] : array();
         try {
-            $result = $this->gameManager->isCorrect($game['id'], $user->getUsername(), $playedCard);
+            $result = $this->gameManager->isCorrect($game['id'], $user->getUsername(), $playedCard, $extra);
             $this->sevenTopic->addPeriodicTimmer($gameTopic, $game['id']);
 
-            if ($result['penalty']) {
+            if (array_key_exists('penalty', $result)) {
                 foreach ($result['penalty'] as $username => $cards) {
                     $userConnection = $this->clientHelper->getConnection($username);
 
@@ -103,13 +104,22 @@ class SevenGame implements RpcInterface
             $gameTopic->broadcast(array(
                 'type' => 'playing',
                 'turn' => $this->gameManager->getTurn($game['id']),
-                'previousTurn' => $result['previousTurn'],
+                'previousTurn' => $user->getUsername(),
                 'topCard' => $result['topCard'],
                 'cards' => $this->gameManager->getCountOfUsersCards($game['id'])
             ));
         } catch (WrongCardException $e) {
+            $this->sevenTopic->addPeriodicTimmer($gameTopic, $game['id']);
+
+            $gameTopic->broadcast(array(
+                'type' => 'playing',
+                'turn' => $this->gameManager->getTurn($game['id']),
+                'previousTurn' => $user->getUsername(),
+                'cards' => $this->gameManager->getCountOfUsersCards($game['id'])
+            ));
+
             return array(
-                'status' => array('message' => 'Ok', 'code' => -1),
+                'status' => array('message' => 'Ok', 'code' => -3),
                 'data' => array('penalties' => $e->getPenalties()),
             );
         }
@@ -143,8 +153,10 @@ class SevenGame implements RpcInterface
             );
         }
 
+        $penalty = array_key_exists('penalty', $game) ? $game['penalty'] + 1 : 1;
+
         $previousTurn = $this->gameManager->getTurn($game['id']);
-        $card = $this->gameManager->getPenalty($game['id'], $user->getUsername(), 1);
+        $card = $this->gameManager->getPenalty($game['id'], $user->getUsername(), $penalty);
         $turn = $this->gameManager->nextTurn($game['id']);
         $this->sevenTopic->addPeriodicTimmer($gameTopic, $game['id']);
 
