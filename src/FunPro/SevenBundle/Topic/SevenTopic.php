@@ -5,6 +5,7 @@ namespace FunPro\SevenBundle\Topic;
 use FunPro\CoreBundle\Manager\GameManager;
 use FunPro\CoreBundle\Model\Game;
 use FunPro\UserBundle\Client\ClientHelper;
+use FunPro\UserBundle\Manager\InboxManager;
 use Gos\Bundle\WebSocketBundle\Router\WampRequest;
 use Gos\Bundle\WebSocketBundle\Topic\TopicInterface;
 use Gos\Bundle\WebSocketBundle\Topic\TopicPeriodicTimerInterface;
@@ -20,15 +21,22 @@ class SevenTopic implements TopicInterface, TopicPeriodicTimerInterface
      * @var GameManager
      */
     private $gameManager;
+
     /**
      * @var ClientHelper
      */
     private $clientHelper;
 
-    public function __construct(GameManager $gameManager, ClientHelper $clientHelper)
+    /**
+     * @var InboxManager
+     */
+    private $inboxManager;
+
+    public function __construct(GameManager $gameManager, ClientHelper $clientHelper, InboxManager $inboxManager)
     {
         $this->gameManager = $gameManager;
         $this->clientHelper = $clientHelper;
+        $this->inboxManager = $inboxManager;
     }
 
     /**
@@ -40,30 +48,37 @@ class SevenTopic implements TopicInterface, TopicPeriodicTimerInterface
     {
     }
 
-    public function addPeriodicTimmer(Topic $topic, $gameId)
+    public function addPeriodicTimmer(Topic $topic, $gameId, $forUser)
     {
-        $goNextTurn = function () use ($topic, $gameId) {
+        $goNextTurn = function () use ($topic, $gameId, $forUser) {
             //give yellow card if player not played
 
-            #FIXME: if penalty > 0 -> getPenalty()
+            $nextTurn = $this->gameManager->nextTurn($gameId, $forUser);
+            if (!$nextTurn) {
+                return;
+            }
 
-            //must use transaction
-            $data = $this->gameManager->nextTurnAndPenalty($gameId);
+            $penalties = $this->gameManager->getPenalty($gameId, $forUser);
 
-            $userSession = $this->clientHelper->getConnection($data['turn']);
+            $message = sprintf('%s get %d card as penalty', $forUser, count($penalties));
+            $this->inboxManager->addLog($gameId, $message);
+            $userSession = $this->clientHelper->getConnection($forUser);
             if ($userSession) {
                 $topic->broadcast(
-                    array('type' => 'penalty', 'cards' => array($data['penalty'])),
+                    array('type' => 'penalty', 'cards' => $penalties),
                     array(),
                     array($userSession->WAMP->sessionId)
                 );
             }
             $topic->broadcast(array(
                 'type' => 'playing',
-                'turn' => $data['nextTurn'],
-                'previousTurn' => $data['turn'],
-                'cards' => array($data['turn'] => $this->gameManager->getCountOfUserCards($gameId, $data['turn']))
+                'nextTurn' => $nextTurn,
+                'player' => $forUser,
+                'cards' => array($forUser => $this->gameManager->getCountOfUserCards($gameId, $forUser))
             ));
+
+            $this->removePeriodicTimer();
+            $this->addPeriodicTimmer($topic, $gameId, $nextTurn);
         };
 
         if (!$this->periodicTimer->isPeriodicTimerActive($this, 'turn')) {
@@ -94,20 +109,32 @@ class SevenTopic implements TopicInterface, TopicPeriodicTimerInterface
             $topic->remove($connection);
         }
 
+        $message = $user->getUsername() . ' joined to game.';
+        $topic->broadcast(['type' => 'notification', 'message' => $message]);
+        $this->inboxManager->addLog($gameId, $message);
+
         $players = $this->gameManager->getPlayers($gameId);
         if ($topic->count() == count($players)
             and in_array($game['game']['status'], array(Game::STATUS_PREPARE, Game::STATUS_PAUSED))
         ) {
             if ($game['game']['status'] == Game::STATUS_PREPARE) {
                 $this->gameManager->startGame($gameId);
+                $message = 'Game started';
             } else {
                 $this->gameManager->resumeGame($gameId);
+                $message = 'Game resumed';
+
+                $logs = $this->inboxManager->getLogs($gameId);
+                $topic->broadcast(array('type' => 'notification', 'message' => $logs));
             }
 
-            $turn = $this->gameManager->getTurn($game['id']);
-            $topic->broadcast(array('type' => 'playing', 'turn' => $turn));
+            $this->inboxManager->addLog($gameId, $message);
+            $topic->broadcast(['type' => 'notification', 'message' => $message]);
 
-            $this->addPeriodicTimmer($topic, $gameId);
+            $turn = $this->gameManager->getTurn($game['id']);
+            $topic->broadcast(array('type' => 'playing', 'nextTurn' => $turn));
+
+            $this->addPeriodicTimmer($topic, $gameId, $turn);
         }
     }
 
@@ -118,12 +145,17 @@ class SevenTopic implements TopicInterface, TopicPeriodicTimerInterface
      */
     public function onUnSubscribe(ConnectionInterface $connection, Topic $topic, WampRequest $request)
     {
+        $user = $this->clientHelper->getCurrentUser($connection);
         $gameId = $request->getAttributes()->get('gameId');
         $game = $this->gameManager->getGame($gameId);
 
         if (!$game or $game['status'] != Game::STATUS_PLAYING) {
             return;
         }
+
+        $message = $user->getUsername() . ' leave the game.';
+        $topic->broadcast(['type' => 'notification', 'message' => $message]);
+        $this->inboxManager->addLog($gameId, $message);
 
         if ($topic->count() == 1) {
             $this->removePeriodicTimer();
@@ -141,7 +173,7 @@ class SevenTopic implements TopicInterface, TopicPeriodicTimerInterface
      */
     public function onPublish(ConnectionInterface $connection, Topic $topic, WampRequest $request, $event, array $exclude, array $eligible)
     {
-
+        $topic->remove($connection);
     }
 
     /**

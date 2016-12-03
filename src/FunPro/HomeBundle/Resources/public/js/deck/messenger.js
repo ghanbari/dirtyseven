@@ -10,20 +10,22 @@ $(document).ready(function () {
 });
 
 var messenger = {
-    notification: function (payload) {
+    notification: function (payload, playSound) {
         that = this;
         $('#messeges > :not(.messenger-notification)').remove();
         $("#messeges").loadTemplate(
             $("#messenger-notification"),
             {
                 author: payload.from,
-                message: payload.message
+                message: emojione.shortnameToImage(payload.message)
             },
             {
                 prepend: true,
                 success: function () {
                     $('#messeges > .messenger-notification:nth-of-type(3)').remove();
-                    that.playSound();
+                    if (playSound === undefined || playSound === true) {
+                        that.playSound();
+                    }
                 }
             }
         );
@@ -32,7 +34,7 @@ var messenger = {
             $("#messenger-notification"),
             {
                 author: payload.from,
-                message: payload.message
+                message: emojione.shortnameToImage(payload.message)
             },
             { prepend: true }
         );

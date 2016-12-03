@@ -31,6 +31,17 @@ class InboxManager
         return $res;
     }
 
+    public function addLog($gameId, $message)
+    {
+        $this->redis->lpush("Logs:$gameId", $message);
+        $this->redis->ltrim("Logs:$gameId", 0, 300);
+    }
+
+    public function getLogs($gameId)
+    {
+        return $this->redis->lrange("Logs:$gameId", 0, -1);
+    }
+
     public function getAll($username, $doPop=true)
     {
         $result = $this->redis->lrange("Inbox:$username", 0, -1);

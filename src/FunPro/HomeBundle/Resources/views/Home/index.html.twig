@@ -447,6 +447,9 @@
     $(document).ready(function () {
         avatars.load();
         emojione.ascii = true;
+        emojione.imageType = 'svg';
+        emojione.sprites = true;
+        emojione.imagePathSVGSprites = '{{ asset('assets/emojione/assets/sprites/emojione.sprites.svg') }}';
     })
 </script>
 </body>

@@ -66,12 +66,18 @@ class GameService implements RpcInterface
                 'data' => array(),
             );
         }
-
-        if ($game['game']['status'] === Game::STATUS_WAITING) {
+        $valid = time() - 300;
+        if ($game['game']['status'] === Game::STATUS_PAUSED
+            and array_key_exists('nextTurnAt', $game['game']) and $game['game']['nextTurnAt'] < $valid
+        ) {
+            $this->gameManager->removeGame($game['id']);
+            return array(
+                'status' => array('message' => 'You have not active game', 'code' => -1),
+                'data' => array(),
+            );
+        } elseif ($game['game']['status'] === Game::STATUS_WAITING) {
             $game['invitations'] = $this->gameManager->getGameInvitations($game['id']);
             $game['ttl'] = $this->gameManager->getGameTtl($game['id']);
-        } else {
-            // retrive game players and other information.
         }
 
         return array(
