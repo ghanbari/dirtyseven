@@ -1,3 +1,0 @@
-fun_pro_user_homepage:
-    resource: "@FunProHomeBundle/Controller/HomeController.php"
-    type:     rest
