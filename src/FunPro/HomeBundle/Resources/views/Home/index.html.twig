@@ -391,11 +391,11 @@
         </div>
     </div>
 </script>
-{% raw %}
+{% verbatim %}
 <script type="text/html" id="message-send-worker">
     <div class="row message message-send" data-time="{{ timestamp }}">
         <div class="col-xs-2">
-            <img class="img-fluid rounded-circle avatar" data-size="38" {% endraw %}src="{{ asset('images/38x38/default.png') }}"{% raw %} data-username="{{ username }}">
+            <img class="img-fluid rounded-circle avatar" data-size="38" {% endverbatim %}src="{{ asset('images/38x38/default.png') }}"{% verbatim %} data-username="{{ username }}">
         </div>
         <div class="col-xs-10 message-text">
             {{{ message }}}
@@ -410,11 +410,11 @@
             <span class="send-at">{{ time }}</span>
         </div>
         <div class="col-xs-2" style="padding-left: 8px;">
-            <img class="img-fluid rounded-circle avatar" data-size="38" {% endraw %}src="{{ asset('images/38x38/default.png') }}"{% raw %} data-username="{{ username }}">
+            <img class="img-fluid rounded-circle avatar" data-size="38" {% endverbatim %}src="{{ asset('images/38x38/default.png') }}"{% verbatim %} data-username="{{ username }}">
         </div>
     </div>
 </script>
-{% endraw %}
+{% endverbatim %}
 <script src="{{ asset('assets/json2/json2.js') }}"></script>
 <script src="{{ asset('assets/jquery/dist/jquery.js') }}"></script>
 <script src="{{ asset('assets/jquery-ui/jquery-ui.js') }}"></script>
