@@ -22,12 +22,12 @@ parameters:
     router.request_context.host: 'dirty-seven.ir'
     router.request_context.base_url: ''
 
-    hwi.oauth2.google.client_id: ''
-    hwi.oauth2.google.client_secret: ''
-    hwi.oauth2.google.scope: 'email'
-    hwi.oauth2.yahoo.client_id: ''
-    hwi.oauth2.yahoo.client_secret: ''
-    hwi.oauth2.yahoo.scope: 'email'
+    hwi.oauth2.google.client_id: 561957481754-mdokef90liga3kjo8vdj8fn14a69mvm5.apps.googleusercontent.com
+    hwi.oauth2.google.client_secret: U7HPpkz7DtijoTYmQgyQ47iJ
+    hwi.oauth2.google.scope: email
+    hwi.oauth2.yahoo.client_id: dj0yJmk9OHZPUUlMeVl1dHpQJmQ9WVdrOVZGaGpRM2hLTmpJbWNHbzlNQS0tJnM9Y29uc3VtZXJzZWNyZXQmeD01ZA--
+    hwi.oauth2.yahoo.client_secret: hwi.oauth2.yahoo.client_secret
+    hwi.oauth2.yahoo.scope: email
 
     api.version.current: 1.0.0
     api.version.available:
