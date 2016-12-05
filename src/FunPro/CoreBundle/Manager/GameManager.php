@@ -43,14 +43,14 @@ class GameManager
      * @param      $scope
      * @param null $ownerUsername
      *
-     * @param null $roundTime
+     * @param null $turnTime
      *
      * @throws \Error
      * @throws \Exception
      * @throws \TypeError
      * @return array (id, game)
      */
-    public function createGame($name, $scope, $ownerUsername = null, $roundTime = null)
+    public function createGame($name, $scope, $ownerUsername = null, $turnTime = null)
     {
         $game = array(
             'scope' => $scope,
@@ -60,7 +60,7 @@ class GameManager
 
         if ($scope == Game::SCOPE_PRIVATE) {
             $game['owner'] = $ownerUsername;
-            $game['roundTime'] = $roundTime;
+            $game['turnTime'] = $turnTime;
         }
 
         do {
@@ -87,17 +87,17 @@ class GameManager
      *
      * @return array (id, game)
      */
-    public function createPrivateGame($ownerUsername, $gameName, $roundTime)
+    public function createPrivateGame($ownerUsername, $gameName, $turnTime)
     {
         if ($userGame = $this->getUserGame($ownerUsername)) {
             $gameId = $userGame['id'];
             $game   = $userGame['game'];
         } else {
-            return $this->createGame($gameName, Game::SCOPE_PRIVATE, $ownerUsername, $roundTime);
+            return $this->createGame($gameName, Game::SCOPE_PRIVATE, $ownerUsername, $turnTime);
         }
 
         if (!$game or $game['status'] == Game::STATUS_FINISHED) {
-            return $this->createGame($gameName, Game::SCOPE_PRIVATE, $ownerUsername, $roundTime);
+            return $this->createGame($gameName, Game::SCOPE_PRIVATE, $ownerUsername, $turnTime);
         } elseif ($game['status'] == Game::STATUS_WAITING
             and $game['scope'] == Game::SCOPE_PRIVATE
             and $game['owner'] == $ownerUsername
@@ -608,8 +608,8 @@ class GameManager
         return $this->redis->scard("Games:$gameId:$username:Cards");
     }
 
-    public function getRoundTime($gameId)
+    public function getTurnTime($gameId)
     {
-        return $this->redis->hget("Games:$gameId", 'roundTime');
+        return $this->redis->hget("Games:$gameId", 'turnTime');
     }
 }

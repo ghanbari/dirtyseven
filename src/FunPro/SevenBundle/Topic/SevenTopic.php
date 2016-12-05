@@ -82,8 +82,8 @@ class SevenTopic implements TopicInterface, TopicPeriodicTimerInterface
         };
 
         if (!$this->periodicTimer->isPeriodicTimerActive($this, 'turn')) {
-            $roundTime = $this->gameManager->getRoundTime($gameId);
-            $this->periodicTimer->addPeriodicTimer($this, 'turn', $roundTime, $goNextTurn);
+            $turnTime = $this->gameManager->getturnTime($gameId);
+            $this->periodicTimer->addPeriodicTimer($this, 'turn', $turnTime, $goNextTurn);
         } else {
             echo 'timer is active, can not register new timer';
         }

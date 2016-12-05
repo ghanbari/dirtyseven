@@ -161,7 +161,7 @@
                             <div class="form-group" id="invite-player">
                                 <input name="player_name" type="text" placeholder="Friend Username" class="form-control">
                                 <div class="input-group" title="Round time">
-                                    <input name="roundTime" type="number" min="3" max="15" value="10" class="form-control">
+                                    <input name="turnTime" type="number" min="3" max="15" value="10" class="form-control">
                                     <span class="input-group-addon">Second</span>
                                 </div>
                                 <button type="submit" class="btn btn-primary">Invite</button>
@@ -241,7 +241,7 @@
         <button class="btn btn-success btn-sm answer-game-suggest">Accept</button>
         <button class="btn btn-danger btn-sm answer-game-suggest">Decline</button>
         <div class="message">
-            <strong data-content="from"></strong> invite from you to play <span data-content="gameName"></span> (<span data-content="roundTime"></span>S)
+            <strong data-content="from"></strong> invite from you to play <span data-content="gameName"></span> (<span data-content="turnTime"></span>S)
         </div>
     </div>
 </script>
@@ -256,7 +256,7 @@
     <tr class="game-suggest" data-template-bind='[{"attribute": "data-game-id", "value": "gameId"}]'>
         <td data-content="invitedBy"></td>
         <td data-content="gameName"></td>
-        <td data-content="roundTime"></td>
+        <td data-content="turnTime"></td>
         <td data-template-bind='[{"attribute": "data-game-id", "value": "gameId"}]'>
             <button type="button" class="btn btn-success answer-game-suggest"><span class="fa fa-check"></span></button>
             <button type="button" class="btn btn-danger answer-game-suggest"><span class="fa fa-close"></span></button>

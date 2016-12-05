@@ -8,7 +8,7 @@ var Seven = (function () {
     var seats = {};
     var countOfPlayersCards = {};
     var topCard;
-    var roundTime;
+    var turnTime;
 
     var discardCard = function (player, topCard) {
         var seat = seats[player];
@@ -124,7 +124,7 @@ var Seven = (function () {
                     }
 
                     if (payload.nextTurn !== undefined) {
-                        var till = (new Date()).getTime() + (roundTime * 1000);
+                        var till = (new Date()).getTime() + (turnTime * 1000);
                         startTurn(payload.nextTurn, till);
                     }
                     break;
@@ -425,7 +425,7 @@ var Seven = (function () {
                 myCards.sort();
                 countOfPlayersCards = result.data.cards.users;
                 topCard = result.data.topCard;
-                roundTime = result.data.roundTime;
+                turnTime = result.data.turnTime;
 
                 adjust();
                 drawMyCards();
