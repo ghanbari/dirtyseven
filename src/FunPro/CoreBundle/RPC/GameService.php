@@ -91,6 +91,8 @@ class GameService implements RpcInterface
         $owner = $this->clientHelper->getCurrentUser($connection);
         $gameName = isset($params['gameName']) ? $params['gameName'] : Game::SEVEN;
         $friendUsername = $params['username'];
+        $roundTime = array_key_exists('roundTime', $params) ? $params['roundTime'] : 10;
+        $roundTime = max(min($roundTime, 15), 3);
 
         if (!$this->friendManager->isFriend($owner->getUsername(), $friendUsername)) {
             return array(
@@ -100,7 +102,7 @@ class GameService implements RpcInterface
         }
 
         try {
-            $game = $this->gameManager->createPrivateGame($owner->getUsername(), $gameName);
+            $game = $this->gameManager->createPrivateGame($owner->getUsername(), $gameName, $roundTime);
         } catch (ActiveGameException $e) {
             return array(
                 'status' => array('message' => $e->getMessage(), 'code' => $e->getCode()),
@@ -146,6 +148,7 @@ class GameService implements RpcInterface
             'gameName' => $gameName,
             'sendAt' => time(),
             'status' => 'new',
+            'roundTime' => $roundTime,
         );
 
         $this->clientHelper->getPublicTopic()->broadcast(

@@ -140,6 +140,7 @@
                                         <tr>
                                             <th>Invited by</th>
                                             <th>Game name</th>
+                                            <th>Round time</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -158,9 +159,10 @@
                     <div class="modal-header">
                         <form class="form-inline" id="invite-player">
                             <div class="form-group" id="invite-player">
-                                <div class="input-group">
-                                    <span title="Your invitation Expire after" class="input-group-addon" id="game_invitation_expire">00</span>
-                                    <input name="player_name" type="text" placeholder="Friend Username" class="form-control">
+                                <input name="player_name" type="text" placeholder="Friend Username" class="form-control">
+                                <div class="input-group" title="Round time">
+                                    <input name="roundTime" type="number" min="3" max="15" value="10" class="form-control">
+                                    <span class="input-group-addon">Second</span>
                                 </div>
                                 <button type="submit" class="btn btn-primary">Invite</button>
                                 <button id="startGame" type="button" class="btn btn-primary">Start</button>
@@ -188,10 +190,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <button class="close" type="button" data-dismiss="modal">&times;</button>
-                        <div class="btn-group">
-                            <button class="btn btn-warning" id="cancel_current_game">Cancel</button>
-                            <span class="btn btn-warning disabled">Remian time: <span id="my_invitation_expire">0</span></span>
-                        </div>
+                        <button class="btn btn-warning" id="cancel_current_game">Cancel</button>
                     </div>
                     <div class="modal-body">
                         <div class="container-fluid">
@@ -241,7 +240,9 @@
     <div class="messenger-game-invitation messenger_invitation" data-template-bind='[{"attribute": "data-game-id", "value": "gameId"}]'>
         <button class="btn btn-success btn-sm answer-game-suggest">Accept</button>
         <button class="btn btn-danger btn-sm answer-game-suggest">Decline</button>
-        <div class="message"><strong data-content="from"></strong> invite from you to play <span data-content="gameName"></span></div>
+        <div class="message">
+            <strong data-content="from"></strong> invite from you to play <span data-content="gameName"></span> (<span data-content="roundTime"></span>S)
+        </div>
     </div>
 </script>
 <script type="text/html" id="messenger-friend-invitation">
@@ -255,6 +256,7 @@
     <tr class="game-suggest" data-template-bind='[{"attribute": "data-game-id", "value": "gameId"}]'>
         <td data-content="invitedBy"></td>
         <td data-content="gameName"></td>
+        <td data-content="roundTime"></td>
         <td data-template-bind='[{"attribute": "data-game-id", "value": "gameId"}]'>
             <button type="button" class="btn btn-success answer-game-suggest"><span class="fa fa-check"></span></button>
             <button type="button" class="btn btn-danger answer-game-suggest"><span class="fa fa-close"></span></button>

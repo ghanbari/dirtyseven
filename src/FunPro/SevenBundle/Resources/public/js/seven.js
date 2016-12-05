@@ -8,6 +8,7 @@ var Seven = (function () {
     var seats = {};
     var countOfPlayersCards = {};
     var topCard;
+    var roundTime;
 
     var discardCard = function (player, topCard) {
         var seat = seats[player];
@@ -123,7 +124,8 @@ var Seven = (function () {
                     }
 
                     if (payload.nextTurn !== undefined) {
-                        startTurn(payload.nextTurn);
+                        var till = (new Date()).getTime() + (roundTime * 1000);
+                        startTurn(payload.nextTurn, till);
                     }
                     break;
             }
@@ -207,7 +209,6 @@ var Seven = (function () {
             containment: '.deck-container',
             revert: 'invalid',
             cursor: "move",
-            delay: 100,
             opacity: 0.65,
             disabled: true,
             drag: function (event, ui) {
@@ -331,10 +332,6 @@ var Seven = (function () {
 
         clearTurn();
 
-        if (till === undefined) {
-            till = (new Date()).getTime() + 10000;
-        }
-
         if (seat == 0 || seat == 2) {
             option = 'width';
         } else {
@@ -428,6 +425,7 @@ var Seven = (function () {
                 myCards.sort();
                 countOfPlayersCards = result.data.cards.users;
                 topCard = result.data.topCard;
+                roundTime = result.data.roundTime;
 
                 adjust();
                 drawMyCards();

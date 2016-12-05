@@ -43,12 +43,14 @@ class GameManager
      * @param      $scope
      * @param null $ownerUsername
      *
-     * @return array (id, game)
+     * @param null $roundTime
+     *
      * @throws \Error
      * @throws \Exception
      * @throws \TypeError
+     * @return array (id, game)
      */
-    public function createGame($name, $scope, $ownerUsername = null)
+    public function createGame($name, $scope, $ownerUsername = null, $roundTime = null)
     {
         $game = array(
             'scope' => $scope,
@@ -58,6 +60,7 @@ class GameManager
 
         if ($scope == Game::SCOPE_PRIVATE) {
             $game['owner'] = $ownerUsername;
+            $game['roundTime'] = $roundTime;
         }
 
         do {
@@ -84,17 +87,17 @@ class GameManager
      *
      * @return array (id, game)
      */
-    public function createPrivateGame($ownerUsername, $gameName)
+    public function createPrivateGame($ownerUsername, $gameName, $roundTime)
     {
         if ($userGame = $this->getUserGame($ownerUsername)) {
             $gameId = $userGame['id'];
             $game   = $userGame['game'];
         } else {
-            return $this->createGame($gameName, Game::SCOPE_PRIVATE, $ownerUsername);
+            return $this->createGame($gameName, Game::SCOPE_PRIVATE, $ownerUsername, $roundTime);
         }
 
         if (!$game or $game['status'] == Game::STATUS_FINISHED) {
-            return $this->createGame($gameName, Game::SCOPE_PRIVATE, $ownerUsername);
+            return $this->createGame($gameName, Game::SCOPE_PRIVATE, $ownerUsername, $roundTime);
         } elseif ($game['status'] == Game::STATUS_WAITING
             and $game['scope'] == Game::SCOPE_PRIVATE
             and $game['owner'] == $ownerUsername
@@ -216,7 +219,7 @@ class GameManager
 
     public function getUserInvitations($username)
     {
-        $this->redis->zremrangebyscore("GameInvitation:$username", 0, time());
+//        $this->redis->zremrangebyscore("GameInvitation:$username", 0, time());
         return $this->redis->zrange("GameInvitation:$username", 0, -1);
     }
 
@@ -264,11 +267,11 @@ class GameManager
      */
     public function saveUserInvitation($gameId, $username)
     {
-        $ttl = $this->redis->ttl("Games:$gameId");
+//        $ttl = $this->redis->ttl("Games:$gameId");
         $this->redis->hset("PrivateGames:$gameId:invitations", $username, 'waiting');
 //        $this->redis->expire("PrivateGames:$gameId:invitations", $ttl);
-        $this->redis->zadd("GameInvitation:$username", array($gameId => time() + $ttl));
-        $this->redis->zremrangebyscore("GameInvitation:$username", 0, time());
+        $this->redis->zadd("GameInvitation:$username", array($gameId => time()));
+//        $this->redis->zremrangebyscore("GameInvitation:$username", 0, time());
     }
 
     /**
@@ -277,7 +280,7 @@ class GameManager
      */
     public function removeUserInvitation($gameId, $username)
     {
-        $ttl = $this->redis->ttl("Games:$gameId");
+//        $ttl = $this->redis->ttl("Games:$gameId");
         $this->redis->hdel("PrivateGames:$gameId:invitations", $username);
 //        $this->redis->expire("PrivateGames:$gameId:invitations", $ttl);
         $this->redis->zrem("GameInvitation:$username", $gameId);
@@ -308,7 +311,7 @@ class GameManager
      */
     public function setAnswer($gameId, $username, $answer)
     {
-        $ttl = $this->redis->ttl("Games:$gameId");
+//        $ttl = $this->redis->ttl("Games:$gameId");
         $this->redis->hset("PrivateGames:$gameId:invitations", $username, $answer);
 //        $this->redis->expire("PrivateGames:$gameId:invitations", $ttl);
         $this->redis->zrem("GameInvitation:$username", $gameId);
@@ -603,5 +606,10 @@ class GameManager
     public function getCountOfUserCards($gameId, $username)
     {
         return $this->redis->scard("Games:$gameId:$username:Cards");
+    }
+
+    public function getRoundTime($gameId)
+    {
+        return $this->redis->hget("Games:$gameId", 'roundTime');
     }
 }
