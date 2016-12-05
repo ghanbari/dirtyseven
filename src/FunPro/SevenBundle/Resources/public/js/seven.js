@@ -239,9 +239,9 @@ var Seven = (function () {
         });
     };
 
-    var drawPlayerCards = function (username) {
+    var drawPlayerCards = function (username, force) {
         var seat = seats[username];
-        if (countOfPlayersCards[username] == $('img.varagh.seat' + seat).length && $('img.varagh.seat' + seat).first().height() == cardHeight) {
+        if (!force && (countOfPlayersCards[username] == $('img.varagh.seat' + seat).length && $('img.varagh.seat' + seat).first().height() == cardHeight)) {
             return;
         }
 
@@ -361,13 +361,17 @@ var Seven = (function () {
         $(card).css('margin-left', -(cardWidth + 4));
         $('.deck-container').append(card);
         $(card).switchClass('mid', 'seat' + seat);
-        drawPlayerCards(username);
+        drawPlayerCards(username, true);
     };
 
     var drawMyPickedCard = function (cardName) {
         var card = $(Poker.getCardImage(cardHeight, cardName.charAt(0), cardName.substr(1)));
         $(card).addClass('varagh mid');
-        $(card).css('margin-left', -(cardWidth + 4));
+
+        //$(card).css('margin-left', -(cardWidth + 4));
+        var marginLeft = ($('.varagh.seat0').length - myCards.length / 2) * 40 / 100 * cardWidth;
+        $(card).css('margin-left', marginLeft);
+
         $('.deck-container').append(card);
         $(card).animate(
             {
