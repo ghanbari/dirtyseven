@@ -106,46 +106,69 @@ class SevenGame implements RpcInterface
 
         try {
             //always must in the first begin, remove timer
-            $this->sevenTopic->removePeriodicTimer();
+            $this->sevenTopic->removeNextTurnTimer($game['id']);
             $result = $this->gameManager->isCorrect($game['id'], $user->getUsername(), $playedCard, $extra);
-            $this->sevenTopic->addPeriodicTimmer($gameTopic, $game['id'], $this->gameManager->getTurn($game['id']));
 
-            $message = sprintf(
-                '%s play %s',
-                $user->getUsername(),
-                $playedCard
-            );
-            $this->inboxManager->addLog($game['id'], $message);
+            if ($this->gameManager->getCountOfUserCards($game['id'], $user->getUsername()) == 0) {
+                $previousScore = $this->gameManager->getUsersScore($game['id']);
+                $roundScore = $this->gameManager->finishRound($game['id']);
+                $finalScore = $this->gameManager->getUsersScore($game['id']);
 
-            if (array_key_exists('penalty', $result) and is_array($extra) and array_key_exists('target', $extra)) {
-                $userConnection = $this->clientHelper->getConnection($extra['target']);
+                $message = array(
+                    'type' => 'finish_round',
+                    'roundScore' => $roundScore,
+                    'previousScore' => $previousScore,
+                    'finalScore' => $finalScore,
+                );
+
+                if (max($finalScore) >= $game['game']['point']) {
+                    $this->gameManager->finishGame($game['id']);
+                    $message['finished'] = true;
+                } else {
+                    $this->sevenTopic->startNextRoundTimer($gameTopic, $game['id']);
+                }
+
+                $gameTopic->broadcast($message);
+            } else {
+                $this->sevenTopic->startNextTurnTimer($gameTopic, $game['id'], $this->gameManager->getTurn($game['id']));
 
                 $message = sprintf(
-                    '%s give %d card to %s',
+                    '%s play %s',
                     $user->getUsername(),
-                    count($result['penalty']),
-                    $extra['target']
+                    $playedCard
                 );
                 $this->inboxManager->addLog($game['id'], $message);
 
-                if ($userConnection) {
-                    $gameTopic->broadcast(
-                        array('type' => 'penalty', 'cards' => $result['penalty']),
-                        array(),
-                        array($userConnection->WAMP->sessionId)
-                    );
-                }
-            }
+                if (array_key_exists('penalty', $result) and is_array($extra) and array_key_exists('target', $extra)) {
+                    $userConnection = $this->clientHelper->getConnection($extra['target']);
 
-            $gameTopic->broadcast(array(
-                'type' => 'playing',
-                'nextTurn' => $this->gameManager->getTurn($game['id']),
-                'player' => $user->getUsername(),
-                'topCard' => $result['topCard'],
-                'cards' => $this->gameManager->getCountOfUsersCards($game['id'])
-            ));
+                    $message = sprintf(
+                        '%s give %d card to %s',
+                        $user->getUsername(),
+                        count($result['penalty']),
+                        $extra['target']
+                    );
+                    $this->inboxManager->addLog($game['id'], $message);
+
+                    if ($userConnection) {
+                        $gameTopic->broadcast(
+                            array('type' => 'penalty', 'cards' => $result['penalty']),
+                            array(),
+                            array($userConnection->WAMP->sessionId)
+                        );
+                    }
+                }
+
+                $gameTopic->broadcast(array(
+                    'type' => 'playing',
+                    'nextTurn' => $this->gameManager->getTurn($game['id']),
+                    'player' => $user->getUsername(),
+                    'topCard' => $result['topCard'],
+                    'cards' => $this->gameManager->getCountOfUsersCards($game['id'])
+                ));
+            }
         } catch (WrongCardException $e) {
-            $this->sevenTopic->addPeriodicTimmer($gameTopic, $game['id'], $this->gameManager->getTurn($game['id']));
+            $this->sevenTopic->startNextTurnTimer($gameTopic, $game['id'], $this->gameManager->getTurn($game['id']));
 
             $message = sprintf(
                 '%s play %s card that was wrong and get %d card as penalty',
@@ -205,10 +228,10 @@ class SevenGame implements RpcInterface
 
         if ($this->gameManager->canPlay($game['id'], $user->getUsername())) {
             //always must in the first begin, remove timer
-            $this->sevenTopic->removePeriodicTimer();
+            $this->sevenTopic->removeNextTurnTimer($game['id']);
 
             $nextTurn = $this->gameManager->nextTurn($game['id'], $user->getUsername());
-            $this->sevenTopic->addPeriodicTimmer($gameTopic, $game['id'], $nextTurn);
+            $this->sevenTopic->startNextTurnTimer($gameTopic, $game['id'], $nextTurn);
 
             $payload['nextTurn'] = $nextTurn;
             $payload['player'] = $user->getUsername();

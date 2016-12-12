@@ -18,6 +18,8 @@ function showActiveGame() {
                     });
                     $('#game-invitations').modal('toggle');
                     $('.cancel-invitations').css('display', 'inline');
+                    $('input[name="turnTime"]').attr('disabled', 'disabled');
+                    $('input[name="point"]').attr('disabled', 'disabled');
                 } else {
                     $('#current-game-link').removeClass('hidden-xs-up');
                     $('#current-game').data('game-id', data.id);
@@ -40,6 +42,7 @@ function showActiveGame() {
                     $('#current-game').modal('toggle');
                 }
             } else {
+                removeInvitationsAndGame();
                 var game = Seven.create(session, data.id);
             }
         },
@@ -79,17 +82,20 @@ function removeInvitation(username) {
 function removeInvitationsAndGame() {
     $('.game_invited_users').children().remove();
     $('#game-invitations').removeData('game-name');
-    $('#game_invitation_expire').text(moment.duration(0, "seconds").format("mm:ss"));
+    //$('#game_invitation_expire').text(moment.duration(0, "seconds").format("mm:ss"));
+    $('input[name="turnTime"]').removeAttr('disabled');
+    $('input[name="point"]').removeAttr('disabled');
 }
 
-function appendGameSuggest(gameId, owner, name, turnTime) {
+function appendGameSuggest(gameId, owner, name, turnTime, point) {
     $('.game-suggests').loadTemplate(
         $('#game-suggest'),
         {
             invitedBy: owner,
             gameName: name,
             gameId: gameId,
-            turnTime: turnTime
+            turnTime: turnTime,
+            point: point
         },
         {append: true}
     );
@@ -107,7 +113,7 @@ socket.on('socket/connect', function (session) {
         function (result) {
             if (result.status.code == 1) {
                 $.each(result.data.invitations, function (gameId, game) {
-                    appendGameSuggest(gameId, game.owner, game.name, game.turnTime);
+                    appendGameSuggest(gameId, game.owner, game.name, game.turnTime, game.point);
                 });
             }
         },
@@ -146,6 +152,7 @@ $('#current-game').on('game_status', function (event, payload) {
         clearInterval(currentGameTimer);
         $('.current-game').children().remove();
         $('#current-game .close').click();
+        removeInvitationsAndGame();
         var game = Seven.create(session, payload.game.id);
     }
 });
@@ -177,12 +184,14 @@ $('#invite-player').submit(function (event) {
     var username = $(this).find('input[name="player_name"]').val();
     var gameName = $('#game-invitations').data('game-name');
     var turnTime = $('input[name="turnTime"]').val();
+    var point    = $('input[name="point"]').val();
     $(this).find('input[name="player_name"]').val('');
 
-    session.call('games/invite_to_game', {'username': username, gameName: gameName, turnTime: turnTime}).then(
+    session.call('games/invite_to_game', {'username': username, gameName: gameName, turnTime: turnTime, point: point}).then(
         function(result) {
             if (result['status']['code'] == 1) {
                 $('input[name="turnTime"]').attr('disabled', 'disabled');
+                $('input[name="point"]').attr('disabled', 'disabled');
                 appendInvitation(username, 'waiting');
                 $('.cancel-invitations').css('display', 'inline');
             }
@@ -203,7 +212,6 @@ $('.game_invited_users').on('click', 'button.cancel-invitation', function (event
         function (result) {
             if (result.status.code == 1) {
                 removeInvitationsAndGame();
-                $('input[name="turnTime"]').removeAttr('disabled');
             } else if (result.status.code == 2) {
                 removeInvitation(username);
             }
@@ -220,7 +228,6 @@ $('#cancel-invitations').click(function (event) {
     session.call('games/remove_invitations').then(
         function (result) {
             removeInvitationsAndGame();
-            $('input[name="turnTime"]').removeAttr('disabled');
             messenger.notification({from: 'Bot', message: result.status.message});
         },
         function (error, desc) {
@@ -245,12 +252,13 @@ $(document).on('game_invitation', function (event, payload) {
                 gameId: payload.gameId,
                 from: payload.from,
                 gameName: payload.gameName,
-                turnTime: payload.turnTime
+                turnTime: payload.turnTime,
+                point: payload.point
             }
         );
         messenger.playSound();
 
-        appendGameSuggest(payload.gameId, payload.from, payload.gameName, payload.turnTime);
+        appendGameSuggest(payload.gameId, payload.from, payload.gameName, payload.turnTime, payload.point);
     } else {
         removeGameSuggest(payload.gameId);
         messenger.notification({from: payload.from, message: 'Sorry, i can not play with you now, perhaps we can play later.'});

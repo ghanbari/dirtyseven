@@ -128,8 +128,101 @@ var Seven = (function () {
                         startTurn(payload.nextTurn, till);
                     }
                     break;
+                case 'finish_round':
+                    $.each(seats, function (username, seat) {
+                        $('div.seat' + seat + ' img.avatar').parent().remove();
+                        endTurn(seat);
+                    });
+
+                    clearGameScore();
+                    updateGameScore(payload.roundScore, payload.previousScore, payload.finalScore);
+                    $('#game-score').modal('toggle');
+
+                    clearTurn();
+                    $('.get-card').remove();
+                    $('.varagh').remove();
+                    removeInvitationsAndGame();
+
+                    if (payload.finished) {
+                        messenger.notification({from: 'Bot', message: 'Finish game'});
+
+                        _session.unsubscribe('game/seven/chat/' + _gameId);
+                    }
+                    break;
+                case 'start_round':
+                    $('#game-score .close').click();
+                    readCards();
+                    break;
             }
         });
+    };
+
+    var clearGameScore = function () {
+        $('table.game-score thead').children().remove();
+        $('table.game-score tbody').children().remove();
+    };
+
+    var updateGameScore = function (roundScores, previousScores, finalScores) {
+        var finalScoresSorted = [];
+        for (var username in finalScores) {
+            finalScoresSorted.push([username, finalScores[username]])
+        }
+
+        finalScoresSorted.sort(function (a, b) {
+            return a[1] - b[1]
+        });
+
+        var header_row = document.createElement('tr');
+        var header_column = document.createElement('th');
+        header_column.innerHTML = '#';
+        header_row.appendChild(header_column);
+
+        var current_score_row = document.createElement('tr');
+        var current_score_title = document.createElement('td');
+        current_score_title.innerHTML = 'Current Score';
+        current_score_row.appendChild(current_score_title);
+
+        var previous_score_row = document.createElement('tr');
+        var previous_score_title = document.createElement('td');
+        previous_score_title.innerHTML = 'Previous Score';
+        previous_score_row.appendChild(previous_score_title);
+
+        var final_score_row = document.createElement('tr');
+        var final_score_title = document.createElement('td');
+        final_score_title.innerHTML = 'Final Score';
+        final_score_row.appendChild(final_score_title);
+
+        finalScoresSorted.forEach(function (finalScore) {
+            var username = finalScore[0];
+            var score = finalScore[1];
+
+            var th = document.createElement('th');
+            th.innerHTML = username;
+            header_row.appendChild(th);
+
+            var current_score_td = document.createElement('td');
+            current_score_td.innerHTML = roundScores[username];
+            current_score_row.appendChild(current_score_td);
+
+            var previous_score_td = document.createElement('td');
+            var previous_score = previousScores.hasOwnProperty(username) ? previousScores[username] : 0;
+            previous_score_td.innerHTML = previous_score;
+            previous_score_row.appendChild(previous_score_td);
+
+            var final_score_td = document.createElement('td');
+            final_score_td.innerHTML = score;
+            final_score_row.appendChild(final_score_td);
+
+            messenger.notification({
+                from: 'Bot',
+                message: username + ': ' + previous_score.toString() + ' + ' + roundScores[username] + ' = ' + score.toString()
+            });
+        });
+
+        $('table.game-score thead').append(header_row);
+        $('table.game-score tbody').append(previous_score_row);
+        $('table.game-score tbody').append(current_score_row);
+        $('table.game-score tbody').append(final_score_row);
     };
 
     var getEmojiNameOfCard = function (cardName) {

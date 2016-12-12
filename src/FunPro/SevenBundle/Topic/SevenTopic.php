@@ -48,7 +48,7 @@ class SevenTopic implements TopicInterface, TopicPeriodicTimerInterface
     {
     }
 
-    public function addPeriodicTimmer(Topic $topic, $gameId, $forUser)
+    public function startNextTurnTimer(Topic $topic, $gameId, $forUser)
     {
         $goNextTurn = function () use ($topic, $gameId, $forUser) {
             //give yellow card if player not played
@@ -77,21 +77,41 @@ class SevenTopic implements TopicInterface, TopicPeriodicTimerInterface
                 'cards' => array($forUser => $this->gameManager->getCountOfUserCards($gameId, $forUser))
             ));
 
-            $this->removePeriodicTimer();
-            $this->addPeriodicTimmer($topic, $gameId, $nextTurn);
+            $this->removeNextTurnTimer($gameId);
+            $this->startNextTurnTimer($topic, $gameId, $nextTurn);
         };
 
-        if (!$this->periodicTimer->isPeriodicTimerActive($this, 'turn')) {
-            $turnTime = $this->gameManager->getturnTime($gameId);
-            $this->periodicTimer->addPeriodicTimer($this, 'turn', $turnTime, $goNextTurn);
+        if (!$this->periodicTimer->isPeriodicTimerActive($this, 'turn' . $gameId)) {
+            $turnTime = $this->gameManager->getTurnTime($gameId);
+            $this->periodicTimer->addPeriodicTimer($this, 'turn' . $gameId, $turnTime, $goNextTurn);
         } else {
             echo 'timer is active, can not register new timer';
         }
     }
 
-    public function removePeriodicTimer()
+    public function startNextRoundTimer(Topic $topic, $gameId)
     {
-        $this->periodicTimer->cancelPeriodicTimer($this, 'turn');
+        $startRound = function () use ($topic, $gameId) {
+            $this->gameManager->startNewRound($gameId);
+            $topic->broadcast(array('type' => 'start_round'));
+
+            $this->periodicTimer->addPeriodicTimer($this, 'start-round' . $gameId, 5, function () use ($topic, $gameId) {
+                $this->periodicTimer->cancelPeriodicTimer($this, 'start-round' . $gameId);
+                $turn = $this->gameManager->getTurn($gameId);
+                $topic->broadcast(array('type' => 'playing', 'nextTurn' => $turn));
+
+                $this->startNextTurnTimer($topic, $gameId, $turn);
+            });
+
+            $this->periodicTimer->cancelPeriodicTimer($this, 'prepare-round' . $gameId);
+        };
+        $this->periodicTimer->addPeriodicTimer($this, 'prepare-round' . $gameId, 30, $startRound);
+    }
+
+    public function removeNextTurnTimer($gameId)
+    {
+        #FIXME: should not remove all timers, only timers for given game
+        $this->periodicTimer->cancelPeriodicTimer($this, 'turn' . $gameId);
         return $this;
     }
 
@@ -135,7 +155,7 @@ class SevenTopic implements TopicInterface, TopicPeriodicTimerInterface
             $turn = $this->gameManager->getTurn($game['id']);
             $topic->broadcast(array('type' => 'playing', 'nextTurn' => $turn));
 
-            $this->addPeriodicTimmer($topic, $gameId, $turn);
+            $this->startNextTurnTimer($topic, $gameId, $turn);
         }
     }
 
@@ -159,7 +179,7 @@ class SevenTopic implements TopicInterface, TopicPeriodicTimerInterface
         $this->inboxManager->addLog($gameId, $message);
 
         if ($topic->count() == 1) {
-            $this->removePeriodicTimer();
+            $this->removeNextTurnTimer($gameId);
             $this->gameManager->pauseGame($gameId);
         }
     }

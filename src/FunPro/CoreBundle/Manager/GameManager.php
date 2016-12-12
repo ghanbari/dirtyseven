@@ -11,6 +11,7 @@ use FunPro\UserBundle\Entity\User;
 use FunPro\UserBundle\Event\UserStatusEvent;
 use FunPro\UserBundle\Event\UserStatusResetEvent;
 use FunPro\UserBundle\Events;
+use FunPro\UserBundle\Manager\InboxManager;
 use Predis\Client;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -31,26 +32,32 @@ class GameManager
      */
     private $eventDispatcher;
 
-    public function __construct(Client $redis, Registry $doctrine, EventDispatcherInterface $eventDispatcher)
+    /**
+     * @var InboxManager
+     */
+    private $inboxManager;
+
+    public function __construct(Client $redis, Registry $doctrine, EventDispatcherInterface $eventDispatcher, InboxManager $inboxManager)
     {
         $this->redis = $redis;
         $this->doctrine = $doctrine;
         $this->eventDispatcher = $eventDispatcher;
+        $this->inboxManager = $inboxManager;
     }
 
     /**
      * @param      $name
      * @param      $scope
      * @param null $ownerUsername
-     *
      * @param null $turnTime
+     * @param null $point
      *
      * @throws \Error
      * @throws \Exception
      * @throws \TypeError
      * @return array (id, game)
      */
-    public function createGame($name, $scope, $ownerUsername = null, $turnTime = null)
+    public function createGame($name, $scope, $ownerUsername = null, $turnTime = null, $point = null)
     {
         $game = array(
             'scope' => $scope,
@@ -61,6 +68,7 @@ class GameManager
         if ($scope == Game::SCOPE_PRIVATE) {
             $game['owner'] = $ownerUsername;
             $game['turnTime'] = $turnTime;
+            $game['point'] = $point;
         }
 
         do {
@@ -83,21 +91,22 @@ class GameManager
      * @param $ownerUsername
      * @param $gameName
      *
-     * @throws ActiveGameException
+     * @param $turnTime
+     * @param $point
      *
      * @return array (id, game)
      */
-    public function createPrivateGame($ownerUsername, $gameName, $turnTime)
+    public function createPrivateGame($ownerUsername, $gameName, $turnTime, $point)
     {
         if ($userGame = $this->getUserGame($ownerUsername)) {
             $gameId = $userGame['id'];
             $game   = $userGame['game'];
         } else {
-            return $this->createGame($gameName, Game::SCOPE_PRIVATE, $ownerUsername, $turnTime);
+            return $this->createGame($gameName, Game::SCOPE_PRIVATE, $ownerUsername, $turnTime, $point);
         }
 
         if (!$game or $game['status'] == Game::STATUS_FINISHED) {
-            return $this->createGame($gameName, Game::SCOPE_PRIVATE, $ownerUsername, $turnTime);
+            return $this->createGame($gameName, Game::SCOPE_PRIVATE, $ownerUsername, $turnTime, $point);
         } elseif ($game['status'] == Game::STATUS_WAITING
             and $game['scope'] == Game::SCOPE_PRIVATE
             and $game['owner'] == $ownerUsername
@@ -115,8 +124,18 @@ class GameManager
     public function removeGame($gameId)
     {
         $game = $this->redis->hgetall("Games:$gameId");
+        $players = $this->getPlayers($gameId);
+
         $this->redis->del("Games:$gameId");
-        $this->redis->hdel('Users:Games', $game['owner']);
+        $this->redis->del("Games:$gameId:Players");
+        $this->redis->del("Logs:$gameId");
+        $this->redis->del("Games:$gameId:Scores");
+
+        foreach ($players as $player) {
+            if ($this->redis->hget('Users:Games', $player) === $gameId) {
+                $this->redis->hdel('Users:Games', $player);
+            }
+        }
 
         $this->removeInvitations($gameId);
 
@@ -328,9 +347,8 @@ class GameManager
 
     /**
      * @param $gameId
-     * @param $players
      */
-    private function divisionCards($gameId, $players)
+    private function divisionCards($gameId)
     {
         $spade = array('s2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10', 'sj', 'sq', 'sk', 'sa');
         $heart = array('ha', 'hk', 'hq', 'hj', 'h10', 'h9', 'h8', 'h7', 'h6', 'h5', 'h4', 'h3', 'h2');
@@ -344,6 +362,7 @@ class GameManager
         $cards = array_merge($spade, $heart, $diamond, $club);
         shuffle($cards);
 
+        $players = $this->redis->lrange("Games:$gameId:Players", 0, -1);
         foreach ($players as $player) {
             $userCards = array();
             for ($j = 0; $j < 7; $j++) {
@@ -379,7 +398,7 @@ class GameManager
             $this->redis->lpush("Games:$gameId:Players", $player);
         }
 
-        $this->divisionCards($gameId, $players);
+        $this->divisionCards($gameId);
 
         $this->redis->hmset(
             "Games:$gameId",
@@ -515,6 +534,8 @@ class GameManager
         $topCardType = substr($topCard, 0, 1);
         $topCardNumber = substr($topCard, 1);
 
+        #FIXME: if count of players card == 2 and $extra['uno'] is not exists, wrong card exception
+
         if ($playedCardNumber !== $topCardNumber and $playedCardType !== $topCardType and $playedCardNumber !== 'j') {
             $penalties = $this->getPenalty($gameId, $username);
             $this->nextTurn($gameId, $username);
@@ -611,5 +632,66 @@ class GameManager
     public function getTurnTime($gameId)
     {
         return $this->redis->hget("Games:$gameId", 'turnTime');
+    }
+
+    public function getMaxPoint($gameId)
+    {
+        return $this->redis->hget("Games:$gameId", 'point');
+    }
+
+    public function getUsersScore($gameId)
+    {
+        return $this->redis->hgetall("Games:$gameId:Scores");
+    }
+
+    public function finishRound($gameId)
+    {
+        $this->inboxManager->addLog($gameId, 'Finish round');
+
+        $topCard = $this->redis->hget("Games:$gameId", 'topCard');
+        $multiply = strpos($topCard, 'j') ? 2 : 1;
+
+        $players = $this->getPlayers($gameId);
+        $scores = array();
+        foreach ($players as $player) {
+            $cards = $this->getUserCards($gameId, $player);
+            $score = 0;
+            foreach ($cards as $card) {
+                $number = substr($card, 1);
+                if (is_numeric($number) and $number < 10) {
+                    $score += $number;
+                } elseif ($number === 'j') {
+                    $score += 20;
+                } else {
+                    $score += 10;
+                }
+            }
+            $scores[$player] = $multiply * $score;
+            $this->redis->hincrby("Games:$gameId:Scores", $player, $multiply * $score);
+
+            $this->inboxManager->addLog($gameId, sprintf('%s: %d', $player, $multiply * $score));
+            $this->redis->del("Games:$gameId:$player:Cards");
+        }
+
+        $this->redis->del("Games:$gameId:UpsetCards");
+        $this->redis->del("Games:$gameId:Cards");
+
+        return $scores;
+    }
+
+    public function startNewRound($gameId)
+    {
+//        $game = $this->getGame($gameId);
+        $this->divisionCards($gameId);
+
+        $this->redis->hmset(
+            "Games:$gameId",
+            array(
+//                'status' => Game::STATUS_PLAYING,
+//                'startedAt' => time(),
+                'direction' => 1,
+                'penalty' => 0,
+            )
+        );
     }
 }

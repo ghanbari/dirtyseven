@@ -30,7 +30,7 @@
                     <a href="#" class="disabled dropdown-toggle game" data-toggle="dropdown">Join Game</a>
                     <div class="dropdown-menu">
                         <a href="#" class="dropdown-item game join" data-game-name="seven" id="join-seven">Seven</a>
-                        <a href="#" class="dropdown-item game join" data-game-name="shelem" id="join-shelem">Shelem</a>
+                        {#<a href="#" class="dropdown-item game join" data-game-name="shelem" id="join-shelem">Shelem</a>#}
                         <a href="#game-suggests" data-toggle="modal" class="dropdown-item game suggests">Invitations</a>
                     </div>
                 </li>
@@ -38,7 +38,7 @@
                     <a href="#" class="disabled dropdown-toggle game" data-toggle="dropdown">New Game</a>
                     <div class="dropdown-menu">
                         <a href="#" class="dropdown-item game create" data-game-name="seven" id="create-seven">Seven</a>
-                        <a href="#" class="dropdown-item game create" data-game-name="shelem" id="create-shelem">Shelem</a>
+                        {#<a href="#" class="dropdown-item game create" data-game-name="shelem" id="create-shelem">Shelem</a>#}
                         <a href="#current-game" data-toggle="modal" class="dropdown-item game current hidden-xs-up" id="current-game-link">Current</a>
                     </div>
                 </li>
@@ -141,12 +141,36 @@
                                             <th>Invited by</th>
                                             <th>Game name</th>
                                             <th>Round time</th>
+                                            <th>Max Point</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody class="game-suggests">
                                     </tbody>
                                 </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="game-score" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <h4 class="modal-title">Game score</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container-fluid">
+                            <table class="table table-striped table-reflow game-score">
+                                <thead>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -163,6 +187,10 @@
                                 <div class="input-group" title="Round time">
                                     <input name="turnTime" type="number" min="3" max="15" value="10" class="form-control">
                                     <span class="input-group-addon">Second</span>
+                                </div>
+                                <div class="input-group" title="Max score">
+                                    <input name="point" type="number" min="30" max="1000" step="10" value="30" class="form-control">
+                                    <span class="input-group-addon">Point</span>
                                 </div>
                                 <button type="submit" class="btn btn-primary">Invite</button>
                                 <button id="startGame" type="button" class="btn btn-primary">Start</button>
@@ -257,9 +285,10 @@
         <td data-content="invitedBy"></td>
         <td data-content="gameName"></td>
         <td data-content="turnTime"></td>
+        <td data-content="point"></td>
         <td data-template-bind='[{"attribute": "data-game-id", "value": "gameId"}]'>
-            <button type="button" class="btn btn-success answer-game-suggest"><span class="fa fa-check"></span></button>
-            <button type="button" class="btn btn-danger answer-game-suggest"><span class="fa fa-close"></span></button>
+            <button type="button" class="btn btn-success btn-sm answer-game-suggest"><span class="fa fa-check"></span></button>
+            <button type="button" class="btn btn-danger btn-sm answer-game-suggest"><span class="fa fa-close"></span></button>
         </td>
     </tr>
 </script>
