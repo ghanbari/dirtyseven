@@ -39,9 +39,9 @@ class UserProvider extends BaseFOSUBProvider
         $user = $this->userManager->findUserByEmail($userEmail);
 
         if (null === $user) {
-            $username = $response->getRealName();
             $user = new User();
-            $user->setUsername($username);
+            $user->setUsername($response->getUsername());
+            $user->setEmail($response->getEmail());
             $this->userManager->updateUser($user);
 
             return $user;
