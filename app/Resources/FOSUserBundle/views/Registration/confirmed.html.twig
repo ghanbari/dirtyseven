@@ -4,6 +4,6 @@
 
 {% block fos_user_content %}
     <div class="info">
-        <span>{{ 'registration.confirmed'|trans({'%username%': user.username}) }}</span>
+        <span>{{ 'registration.confirmed'|trans({'%username%': user.username}) }}</span> <a href="{{ path('fos_user_security_login') }}">Login</a>
     </div>
 {% endblock fos_user_content %}
