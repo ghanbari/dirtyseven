@@ -15,7 +15,7 @@ function deleteAllCookies() {
 //        .addClass(status);
 //}
 
-var socket = WS.connect('ws://dirtyseven.ir:8080');
+var socket = WS.connect('ws://' + soho + ':' + sopo);
 var session;
 
 socket.on('socket/connect', function(sess) {

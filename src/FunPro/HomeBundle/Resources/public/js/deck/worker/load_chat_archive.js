@@ -9,7 +9,7 @@ onmessage = function (event) {
     console.log('start work');
     var data = event.data;
 
-    var socket = WS.connect('ws://dirtyseven.ir:8080');
+    var socket = WS.connect(data.uri);
 
     socket.on('socket/connect', function(session) {
         session.call('user/get_chat_message', {username: data.myFriend, page: data.page}).then(

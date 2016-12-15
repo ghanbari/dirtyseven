@@ -22,7 +22,7 @@
     <div class="deck">
         <div class="menu">
             <ul>
-                <li title="Online & Free">
+                <li title="{{ app.user.username }}: Online & Free">
                     <span class="fa fa-circle user-status" data-username="{{ app.user.username }}" id="my-status"></span>
                     <img data-username="{{ app.user.username }}" src="{{ asset('images/38x38/default.png') }}" id="myAvatar" class="img-thumbnail img-fluid rounded-circle avatar" data-size="38">
                 </li>
@@ -458,6 +458,7 @@
 <script src="{{ asset('assets/moment-duration-format/lib/moment-duration-format.js') }}"></script>
 <script src="{{ asset('assets/emojione/lib/js/emojione.min.js') }}"></script>
 <script src="{{ asset('assets/pokerjs/release/poker.min.js') }}"></script>
+<script>var soho = '{{ gos_web_socket_server_host }}', sopo = '{{ gos_web_socket_server_port }}';</script>
 {{ ws_client() }}
 <script src="{{ asset('bundles/funprohome/js/deck/messenger.js') }}"></script>
 <script src="{{ asset('bundles/funprohome/js/deck/main.js') }}"></script>

@@ -30,6 +30,7 @@ function loadLastMessage(friend, page) {
         if (typeof(w) == "undefined") {
             w = new Worker("/bundles/funprohome/js/deck/worker/load_chat_archive.js");
             w.postMessage({
+                uri: 'ws://' + soho + ':' + sopo,
                 myUsername: $.jStorage.get('myUsername'),
                 myFriend: friend,
                 template_send: $('#message-send-worker').html(),
