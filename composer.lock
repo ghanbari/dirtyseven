@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "086ed031d7c3c887037c1d2aa1d5ebf4",
-    "content-hash": "f9b42aa4c00628c872571849134177e8",
+    "hash": "c74ccc7eec7b4d2e84c97e3a701b95f5",
+    "content-hash": "a7e2ff9d7a6ea7ec9e72bc486adc7a2b",
     "packages": [
         {
             "name": "behat/transliterator",
@@ -1156,12 +1156,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/FriendsOfSymfony/FOSUserBundle.git",
-                "reference": "03ce036476ac45fac6f84cec7542062b12900ecb"
+                "reference": "6ccff96434c0ac7fee077d1dce90966341dfd278"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/FriendsOfSymfony/FOSUserBundle/zipball/03ce036476ac45fac6f84cec7542062b12900ecb",
-                "reference": "03ce036476ac45fac6f84cec7542062b12900ecb",
+                "url": "https://api.github.com/repos/FriendsOfSymfony/FOSUserBundle/zipball/6ccff96434c0ac7fee077d1dce90966341dfd278",
+                "reference": "6ccff96434c0ac7fee077d1dce90966341dfd278",
                 "shasum": ""
             },
             "require": {
@@ -1223,7 +1223,7 @@
             "keywords": [
                 "User management"
             ],
-            "time": "2016-12-08 14:40:38"
+            "time": "2016-01-08 10:46:39"
         },
         {
             "name": "gedmo/doctrine-extensions",
@@ -4715,13 +4715,13 @@
     "minimum-stability": "dev",
     "stability-flags": {
         "gos/web-socket-bundle": 20,
-        "friendsofsymfony/user-bundle": 20,
         "stof/doctrine-extensions-bundle": 20,
         "symfony/assetic-bundle": 20,
         "hwi/oauth-bundle": 20,
-        "snc/redis-bundle": 20
+        "snc/redis-bundle": 20,
+        "friendsofsymfony/user-bundle": 20
     },
-    "prefer-stable": false,
+    "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": "^5.5.9"
