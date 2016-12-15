@@ -42,7 +42,7 @@ class UserProvider extends BaseFOSUBProvider
             $user = $this->userManager->createUser();
             $user->setUsername($response->getUsername());
             $user->setEmail($response->getEmail());
-            $user->setPassword($response->getUsername());
+            $user->setPlainPassword($response->getUsername());
             $user->setEnabled(true);
             $this->userManager->updateUser($user);
 
