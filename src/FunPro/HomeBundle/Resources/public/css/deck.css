@@ -70,6 +70,14 @@ a.disabled {
     left: 0px;
 }
 
+.varagh {
+    z-index: 1;
+}
+
+#chat-room-container {
+    z-index: 0;
+}
+
 .mid {
     position: absolute;
     bottom: 35%;

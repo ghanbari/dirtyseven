@@ -148,6 +148,8 @@ var Seven = (function () {
 
                         _session.unsubscribe('game/seven/chat/' + _gameId);
                     }
+
+                    $('#chat-room-container').show();
                     break;
                 case 'start_round':
                     $('#game-score .close').click();
@@ -293,6 +295,14 @@ var Seven = (function () {
     };
 
     var drawMyCard = function (name) {
+        if (myCards.length > 15) {
+            cardHeight = $(document).height() / 7;
+        } else if (myCards.length > 20) {
+            cardHeight = $(document).height() / 8;
+        } else if (myCards.length > 25) {
+            cardHeight = $(document).height() / 9;
+        }
+
         var card = $(Poker.getCardImage(cardHeight, name.charAt(0), name.substr(1)));
         card.data('name', name);
         card.addClass('varagh seat0');
@@ -642,6 +652,7 @@ var Seven = (function () {
         _this = this;
         readCards();
         connect();
+        $('#chat-room-container').hide();
         $(window).resize(function(){
             adjust();
             drawMyCards();
