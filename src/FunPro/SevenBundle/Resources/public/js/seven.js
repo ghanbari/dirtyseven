@@ -82,8 +82,6 @@ var Seven = (function () {
                         }
                         var message = 'You get ' + getEmojiNameOfCard(cardName) + ' as penalty';
                         messenger.notification({from: 'Bot', message: message}, false);
-                        myCards.push(cardName);
-                        myCards.sort();
                         drawMyPickedCard(cardName);
                     });
                     break;
@@ -107,7 +105,6 @@ var Seven = (function () {
                                     messenger.notification({from: 'Bot', message: message}, false);
                                 } else if (countOfPlayersCards[username] > count) {
                                     countOfPlayersCards[username] = count;
-                                    drawPlayerCard(username);
                                 }
                             }
                         });
@@ -294,7 +291,7 @@ var Seven = (function () {
         $('.deck-container').append(div);
     };
 
-    var drawMyCard = function (name) {
+    var drawMyCard = function (name, animate) {
         if (myCards.length > 15) {
             cardHeight = $(document).height() / 7;
         } else if (myCards.length > 20) {
@@ -305,9 +302,16 @@ var Seven = (function () {
 
         var card = $(Poker.getCardImage(cardHeight, name.charAt(0), name.substr(1)));
         card.data('name', name);
-        card.addClass('varagh seat0');
-        var marginLeft = ($('.varagh.seat0').length - myCards.length / 2) * 40 / 100 * cardWidth;
-        $(card).css('margin-left', marginLeft);
+        var marginLeft = (($('.varagh.seat0, .move-to-my-card').length) - myCards.length / 2) * 40 / 100 * cardWidth;
+
+        if (animate) {
+            card.addClass('varagh mid move-to-my-card');
+            card.css('position', 'absolute');
+        } else {
+            card.addClass('varagh seat0');
+            $(card).css('margin-left', marginLeft);
+        }
+
         card.draggable({
             containment: '.deck-container',
             revert: 'invalid',
@@ -320,16 +324,35 @@ var Seven = (function () {
                 }
             }
         });
+
         $('.deck-container').append(card);
+
+        if (animate) {
+            card.animate({
+                    left: '50%',
+                    bottom: '8px',
+                    marginLeft: marginLeft},
+                'slow',
+                function () {
+                    card
+                        .removeClass('mid move-to-my-card')
+                        .addClass('seat0');
+                    $('.varagh.seat0').draggable('enable');
+                }
+            );
+        } else {
+            $('.varagh.seat0').draggable('enable');
+        }
     };
 
-    var drawMyCards = function () {
+    var drawMyCards = function (animate) {
         clearPlayerCards(myUsername);
-        myCards.forEach(function (name) {
-            drawMyCard(name);
+        var time = animate ? 200 : 0;
+        myCards.forEach(function (name, index) {
+            setTimeout(function () {
+                drawMyCard(name, animate);
+            }, index * time);
         });
-
-        $('.varagh.seat0').draggable('enable');
     };
 
     var drawPlayersCards = function () {
@@ -357,6 +380,7 @@ var Seven = (function () {
     };
 
     var drawPlayerCard = function (username) {
+        console.log('add card', username);
         var seat = seats[username];
         var index = $('.varagh.seat' + seat).length;
         var card = $(Poker.getBackImage(cardHeight));
@@ -408,6 +432,8 @@ var Seven = (function () {
     };
 
     var drawTopCard = function (topCard) {
+        drawCardsStack();
+
         var reverseCard = $(Poker.getCardImage(cardHeight, topCard.charAt(0), topCard.substr(1)));
         reverseCard.addClass('varagh mid reverse');
         $(reverseCard).css('margin-left', '10px');
@@ -416,7 +442,6 @@ var Seven = (function () {
 
     var drawMid = function () {
         drawPickCardButton();
-        drawCardsStack();
         drawTopCard(topCard);
     };
 
@@ -461,13 +486,17 @@ var Seven = (function () {
         var seat = seats[username];
         var card = $(Poker.getBackImage(cardHeight));
         $(card).addClass('varagh mid');
-        $(card).css('margin-left', -(cardWidth + 4));
         $('.deck-container').append(card);
         $(card).switchClass('mid', 'seat' + seat);
-        drawPlayerCards(username, true);
+        setTimeout(function () {
+            drawPlayerCards(username, true);
+        }, 500);
     };
 
     var drawMyPickedCard = function (cardName) {
+        myCards.push(cardName);
+        myCards.sort();
+
         var card = $(Poker.getCardImage(cardHeight, cardName.charAt(0), cardName.substr(1)));
         $(card).addClass('varagh mid');
 
@@ -499,10 +528,10 @@ var Seven = (function () {
                     }
 
                     result.data.cards.forEach(function (cardName) {
-                        myCards.push(cardName);
-                        myCards.sort();
                         drawMyPickedCard(cardName);
                     });
+                } else {
+                    messenger.notification({from: 'Bot', message: result.status.message});
                 }
             },
             function (error, desc) {
@@ -535,7 +564,7 @@ var Seven = (function () {
                 turnTime = result.data.turnTime;
 
                 adjust();
-                drawMyCards();
+                drawMyCards(true);
                 drawPlayersCards();
                 drawMid();
 
@@ -578,6 +607,7 @@ var Seven = (function () {
                                     }
                                 );
                             } else if (result.status.code == -2) {
+                                drawMyPickedCard(result.data.penalty);
                                 ui.draggable.animate($(ui.draggable).data('position'), 500);
                                 setTimeout(drawMyCards, 500);
                             } else if (result.status.code == -3) {
@@ -588,8 +618,6 @@ var Seven = (function () {
                                         return;
                                     }
 
-                                    myCards.push(cardName);
-                                    myCards.sort();
                                     setTimeout(drawMyPickedCard(cardName), 100);
                                 });
                             }

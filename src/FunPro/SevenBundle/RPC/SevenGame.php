@@ -80,14 +80,15 @@ class SevenGame implements RpcInterface
             );
         }
 
+        #FIXME: user must get penalty?, user can play when is not her turn
         if (!$this->gameManager->canPlay($game['id'], $user->getUsername())) {
-            $penalties = $this->gameManager->getPenalty($game['id'], $user->getUsername());
+            $penalty = $this->gameManager->getPenalty($game['id'], $user->getUsername(), false);
 
             $message = sprintf(
                 '%s play %s card that was not turn of user and get %d card as penalty',
                 $user->getUsername(),
                 $playedCard,
-                count($penalties)
+                count($penalty)
             );
             $this->inboxManager->addLog($game['id'], $message);
 
@@ -98,9 +99,10 @@ class SevenGame implements RpcInterface
                 'wrongCard' => $playedCard,
             ));
 
+            //FIXME
             return array(
                 'status' => array('message' => 'Ok', 'code' => -2),
-                'data' => array('penalties' => $penalties),
+                'data' => array('penalty' => $penalty[0]),
             );
         }
 
@@ -211,7 +213,28 @@ class SevenGame implements RpcInterface
             );
         }
 
-        $cards = $this->gameManager->getPenalty($game['id'], $user->getUsername());
+        if (!$this->gameManager->canPlay($game['id'], $user->getUsername()) or $game['game']['pickedCard']) {
+            return array(
+                'status' => array('message' => 'You can not pick card', 'code' => -2),
+                'data' => array(),
+            );
+        }
+
+        //always must in the first begin, remove timer
+        $this->sevenTopic->removeNextTurnTimer($game['id']);
+
+        #when top card is 7, user pick only 2 penalty and [can play card] or [pick other penalty and play card]
+        $cards = $this->gameManager->pickCard($game['id'], $user->getUsername());
+
+        /*
+         * if we do nextTurn, picked card change to false
+         * $nextTurn = $this->gameManager->nextTurn($game['id'], $user->getUsername());
+         */
+
+        /*
+         * if user pick 7's penalties, it can play or get another penalty
+         */
+        $this->sevenTopic->startNextTurnTimer($gameTopic, $game['id'], $user->getUsername(), count($cards) > 1);
 
         $message = sprintf(
             '%s pick %d card',
@@ -224,18 +247,9 @@ class SevenGame implements RpcInterface
         $payload = array(
             'type' => 'playing',
             'cards' => array($user->getUsername() => $userCards),
+            'player' => $user->getUsername(),
+            'nextTurn' => $user->getUsername(),
         );
-
-        if ($this->gameManager->canPlay($game['id'], $user->getUsername())) {
-            //always must in the first begin, remove timer
-            $this->sevenTopic->removeNextTurnTimer($game['id']);
-
-            $nextTurn = $this->gameManager->nextTurn($game['id'], $user->getUsername());
-            $this->sevenTopic->startNextTurnTimer($gameTopic, $game['id'], $nextTurn);
-
-            $payload['nextTurn'] = $nextTurn;
-            $payload['player'] = $user->getUsername();
-        }
 
         $gameTopic->broadcast($payload);
 
