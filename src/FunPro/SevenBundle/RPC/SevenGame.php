@@ -102,7 +102,7 @@ class SevenGame implements RpcInterface
             //FIXME
             return array(
                 'status' => array('message' => 'Ok', 'code' => -2),
-                'data' => array('penalty' => $penalty[0]),
+                'data' => array('penalties' => $penalty),
             );
         }
 
