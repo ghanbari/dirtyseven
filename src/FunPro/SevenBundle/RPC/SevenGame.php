@@ -82,27 +82,33 @@ class SevenGame implements RpcInterface
 
         #FIXME: user must get penalty?, user can play when is not her turn
         if (!$this->gameManager->canPlay($game['id'], $user->getUsername())) {
-            $penalty = $this->gameManager->getPenalty($game['id'], $user->getUsername(), false);
+//            $penalty = $this->gameManager->getPenalty($game['id'], $user->getUsername(), false);
+//
+//            $message = sprintf(
+//                '%s play %s card that was not turn of user and get %d card as penalty',
+//                $user->getUsername(),
+//                $playedCard,
+//                count($penalty)
+//            );
+//            $this->inboxManager->addLog($game['id'], $message);
+//
+//            $gameTopic->broadcast(array(
+//                'type' => 'playing',
+//                'player' => $user->getUsername(),
+//                'cards' => $this->gameManager->getCountOfUsersCards($game['id']),
+//                'wrongCard' => $playedCard,
+//            ));
+//
+//            //FIXME
+//            return array(
+//                'status' => array('message' => 'Ok', 'code' => -2),
+//                'data' => array('penalties' => $penalty),
+//            );
 
-            $message = sprintf(
-                '%s play %s card that was not turn of user and get %d card as penalty',
-                $user->getUsername(),
-                $playedCard,
-                count($penalty)
-            );
-            $this->inboxManager->addLog($game['id'], $message);
 
-            $gameTopic->broadcast(array(
-                'type' => 'playing',
-                'player' => $user->getUsername(),
-                'cards' => $this->gameManager->getCountOfUsersCards($game['id']),
-                'wrongCard' => $playedCard,
-            ));
-
-            //FIXME
             return array(
                 'status' => array('message' => 'Ok', 'code' => -2),
-                'data' => array('penalties' => $penalty),
+                'data' => array(),
             );
         }
 

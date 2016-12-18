@@ -610,9 +610,9 @@ var Seven = (function () {
                                     }
                                 );
                             } else if (result.status.code == -2) {
-                                drawMyPickedCard(result.data.penalties);
-                                ui.draggable.animate($(ui.draggable).data('position'), 500);
-                                setTimeout(drawMyCards, 500);
+                                //drawMyPickedCard(result.data.penalties);
+                                //ui.draggable.animate($(ui.draggable).data('position'), 500);
+                                //setTimeout(drawMyCards, 500);
                             } else if (result.status.code == -3) {
                                 ui.draggable.animate($(ui.draggable).data('position'), 500);
                                 setTimeout(drawMyCards, 500);
