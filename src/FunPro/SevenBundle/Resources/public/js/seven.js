@@ -9,6 +9,7 @@ var Seven = (function () {
     var countOfPlayersCards = {};
     var topCard;
     var turnTime;
+    var currentTurn;
 
     var discardCard = function (player, topCard) {
         var seat = seats[player];
@@ -122,7 +123,8 @@ var Seven = (function () {
 
                     if (payload.nextTurn !== undefined) {
                         var till = (new Date()).getTime() + (turnTime * 1000);
-                        startTurn(payload.nextTurn, till);
+                        currentTurn = payload.nextTurn;
+                        startTurn(till);
                     }
                     break;
                 case 'finish_round':
@@ -325,6 +327,12 @@ var Seven = (function () {
         myCards.forEach(function (name) {
             drawMyCard(name);
         });
+
+        if (currentTurn == myUsername) {
+            $('.varagh.seat0').draggable('enable');
+        } else {
+            $('.varagh.seat0').draggable('disable');
+        }
     };
 
     var drawPlayersCards = function () {
@@ -424,8 +432,8 @@ var Seven = (function () {
         $('.pick-color').children().remove();
     };
 
-    var startTurn = function (turn, till) {
-        var seat = seats[turn];
+    var startTurn = function (till) {
+        var seat = seats[currentTurn];
         var animation = {};
         var option;
 
@@ -542,7 +550,8 @@ var Seven = (function () {
                 drawMid();
 
                 if (result.data.status == 'playing') {
-                    startTurn(result.data.nextTurn, result.data.nextTurnAt * 1000);
+                    currentTurn = result.data.nextTurn;
+                    startTurn(result.data.nextTurnAt * 1000);
                 }
             },
             function (error, desc) {
