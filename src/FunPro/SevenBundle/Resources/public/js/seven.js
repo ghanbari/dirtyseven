@@ -77,13 +77,13 @@ var Seven = (function () {
                     }
                     break;
                 case 'penalty':
-                    payload.cards.forEach(function (cardName) {
+                    payload.cards.forEach(function (cardName, index) {
                         if (!cardName) {
                             return;
                         }
                         var message = 'You get ' + getEmojiNameOfCard(cardName) + ' as penalty';
                         messenger.notification({from: 'Bot', message: message}, false);
-                        drawMyPickedCard(cardName);
+                        drawMyPickedCard(cardName, index == (payload.cards.length - 1));
                     });
                     break;
                 case 'playing':
@@ -475,7 +475,7 @@ var Seven = (function () {
         }, 500);
     };
 
-    var drawMyPickedCard = function (cardName) {
+    var drawMyPickedCard = function (cardName, redrawCards) {
         myCards.push(cardName);
         myCards.sort();
 
@@ -495,7 +495,9 @@ var Seven = (function () {
             'slow',
             function () {
                 $(card).remove();
-                drawMyCards();
+                if (redrawCards) {
+                    drawMyCards();
+                }
             }
         );
     };
@@ -508,8 +510,8 @@ var Seven = (function () {
                         return;
                     }
 
-                    result.data.cards.forEach(function (cardName) {
-                        drawMyPickedCard(cardName);
+                    result.data.cards.forEach(function (cardName, index) {
+                        drawMyPickedCard(cardName, index == (result.data.cards.length - 1));
                     });
                 } else {
                     messenger.notification({from: 'Bot', message: result.status.message});
@@ -595,12 +597,12 @@ var Seven = (function () {
                             } else if (result.status.code == -3) {
                                 ui.draggable.animate($(ui.draggable).data('position'), 500);
                                 setTimeout(drawMyCards, 500);
-                                result.data.penalties.forEach(function (cardName) {
+                                result.data.penalties.forEach(function (cardName, index) {
                                     if (!cardName) {
                                         return;
                                     }
 
-                                    setTimeout(drawMyPickedCard([cardName]), 100);
+                                    drawMyPickedCard(cardName, index == (result.data.penalties.length - 1));
                                 });
                             }
                         },
