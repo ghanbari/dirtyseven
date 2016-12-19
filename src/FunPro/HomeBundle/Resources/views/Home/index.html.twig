@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/html">
+<html manifest="manifest.appcache">
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="cache-control" content="no-cache">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" type="text/css" href="{{ asset('assets/bootstrap/dist/css/bootstrap.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/deck.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/menu.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/messenger.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/friend.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/game.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/chatroom.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('assets/jquery-ui/themes/base/jquery-ui.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/bootstrap/dist/css/bootstrap.min.css') }}">
+
+    {% stylesheets '@FunProHomeBundle/Resources/public/css/deck.css'
+    'bundles/funprohome/css/menu.css'
+    'bundles/funprohome/css/messenger.css'
+    'bundles/funprohome/css/friend.css'
+    'bundles/funprohome/css/game.css'
+    'bundles/funprohome/css/chatroom.css'
+    filter='cssrewrite' output='css/core.css' %}
+    <link rel="stylesheet" type="text/css" href="{{ asset_url }}">
+    {% endstylesheets %}
     <link rel="stylesheet" media="screen and (orientation:portrait)" type="text/css" href="{{ asset('bundles/funprouser/css/portrait.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/font-awesome/css/font-awesome.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/jquery-ui/themes/base/jquery-ui.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/font-awesome/css/font-awesome.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/emojione/assets/css/emojione.min.css') }}">
 </head>
 <body>
@@ -447,27 +450,30 @@
 </script>
 {% endverbatim %}
 <script src="{{ asset('assets/json2/json2.js') }}"></script>
-<script src="{{ asset('assets/jquery/dist/jquery.js') }}"></script>
-<script src="{{ asset('assets/jquery-ui/jquery-ui.js') }}"></script>
-<script src="{{ asset('assets/bootstrap/dist/js/bootstrap.js') }}"></script>
-<script src="{{ asset('assets/jquery-load-template/dist/jquery.loadTemplate.js') }}"></script>
+<script src="{{ asset('assets/jquery/dist/jquery.min.js') }}"></script>
+<script src="{{ asset('assets/jquery-ui/jquery-ui.min.js') }}"></script>
+<script src="{{ asset('assets/bootstrap/dist/js/bootstrap.min.js') }}"></script>
+<script src="{{ asset('assets/jquery-load-template/dist/jquery.loadTemplate.min.js') }}"></script>
 <script src="{{ asset('assets/jquery.nicescroll/dist/jquery.nicescroll.min.js') }}"></script>
-<script src="{{ asset('assets/jStorage/jstorage.js') }}"></script>
+<script src="{{ asset('assets/jStorage/jstorage.min.js') }}"></script>
 <script src="{{ asset('assets/js-php-unserialize/php-unserialize.js') }}"></script>
-<script src="{{ asset('assets/moment/moment.js') }}"></script>
+<script src="{{ asset('assets/moment/min/moment.min.js') }}"></script>
 <script src="{{ asset('assets/moment-duration-format/lib/moment-duration-format.js') }}"></script>
 <script src="{{ asset('assets/emojione/lib/js/emojione.min.js') }}"></script>
 <script src="{{ asset('assets/pokerjs/release/poker.min.js') }}"></script>
 <script>var soho = '{{ gos_web_socket_server_host }}', sopo = '{{ gos_web_socket_server_port }}';</script>
 {{ ws_client() }}
-<script src="{{ asset('bundles/funprohome/js/deck/messenger.js') }}"></script>
-<script src="{{ asset('bundles/funprohome/js/deck/main.js') }}"></script>
-<script src="{{ asset('bundles/funprohome/js/deck/avatar.js') }}"></script>
-<script src="{{ asset('bundles/funprohome/js/deck/friend.js') }}"></script>
-<script src="{{ asset('bundles/funprohome/js/deck/chatroom.js') }}"></script>
-<script src="{{ asset('bundles/funprohome/js/deck/user_status.js') }}"></script>
-<script src="{{ asset('bundles/funprohome/js/deck/game.menu.js') }}"></script>
-<script src="{{ asset('bundles/funproseven/js/seven.js') }}"></script>
+{% javascripts
+'@FunProHomeBundle/Resources/public/js/deck/messenger.js'
+'@FunProHomeBundle/Resources/public/js/deck/main.js'
+'@FunProHomeBundle/Resources/public/js/deck/avatar.js'
+'@FunProHomeBundle/Resources/public/js/deck/friend.js'
+'@FunProHomeBundle/Resources/public/js/deck/chatroom.js'
+'@FunProHomeBundle/Resources/public/js/deck/user_status.js'
+'@FunProHomeBundle/Resources/public/js/deck/game.menu.js'
+'@FunProSevenBundle/Resources/public/js/seven.js' output='js/core.js' %}
+    <script src="{{ asset_url }}"></script>
+{% endjavascripts %}
 <script type="text/javascript">
     if (!$.jStorage.storageAvailable()) {
         alert('Local storage is not supported by your browser. Please disable "Private Mode", or upgrade to a modern browser.')

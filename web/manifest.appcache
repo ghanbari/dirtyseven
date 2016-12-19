@@ -1,0 +1,28 @@
+CACHE MANIFEST
+
+# Time: Monday, 19 December 2016 16:42:28
+
+assets/bootstrap/dist/css/bootstrap.min.css
+css/core.css
+bundles/funprouser/css/portrait.css
+assets/jquery-ui/themes/base/jquery-ui.min.css
+assets/font-awesome/css/font-awesome.min.css
+assets/emojione/assets/css/emojione.min.css
+
+images/*
+
+assets/json2/json2.js
+assets/jquery/dist/jquery.min.js
+assets/jquery-ui/jquery-ui.min.js
+assets/bootstrap/dist/js/bootstrap.min.js
+assets/jquery-load-template/dist/jquery.loadTemplate.min.js
+assets/jquery.nicescroll/dist/jquery.nicescroll.min.js
+assets/jStorage/jstorage.min.js
+assets/js-php-unserialize/php-unserialize.js
+assets/moment/min/moment.min.js
+assets/moment-duration-format/lib/moment-duration-format.js
+assets/emojione/lib/js/emojione.min.js
+assets/pokerjs/release/poker.min.js
+assets/*
+
+js/core.js
