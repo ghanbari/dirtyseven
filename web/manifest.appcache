@@ -14,6 +14,7 @@ images/*
 assets/json2/json2.js
 assets/jquery/dist/jquery.min.js
 assets/jquery-ui/jquery-ui.min.js
+assets/jqueryui-touch-punch/jquery.ui.touch-punch.min.js
 assets/bootstrap/dist/js/bootstrap.min.js
 assets/jquery-load-template/dist/jquery.loadTemplate.min.js
 assets/jquery.nicescroll/dist/jquery.nicescroll.min.js
