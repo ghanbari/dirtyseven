@@ -23,7 +23,6 @@ socket.on('socket/connect', function(sess) {
     //TODO: move this line to check game rpc
     $('a.game').removeClass('disabled');
     messenger.notification({'message': 'Successfully Connected', 'from': 'Bot'});
-    userStatus.update($.jStorage.get('myUsername'), 'online');
 
     session.subscribe('chat/public', function(uri, payload) {
         if (payload.constructor.toString().indexOf("Array") > -1) {
@@ -68,5 +67,4 @@ socket.on('socket/connect', function(sess) {
 socket.on('socket/disconnect', function (error) {
     messenger.notification({'message': error.reason, 'from': 'Bot'});
     $('a.game').addClass('disabled');
-    userStatus.update($.jStorage.get('myUsername'), 'offline');
 });
