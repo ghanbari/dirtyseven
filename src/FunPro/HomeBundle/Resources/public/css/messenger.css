@@ -5,7 +5,13 @@ li.messenger{
     height: auto;
 }
 
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 768px) and (min-width: 700px) {
+    li.messenger{
+        width: 85%;
+    }
+}
+
+@media screen and (max-width: 700px) {
     li.messenger{
         width: 70%;
     }
