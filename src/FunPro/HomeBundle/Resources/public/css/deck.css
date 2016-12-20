@@ -70,9 +70,9 @@ a.disabled {
     left: 0px;
 }
 
-.varagh {
-    z-index: 1;
-}
+/*.varagh {*/
+    /*z-index: 1;*/
+/*}*/
 
 #chat-room-container {
     z-index: 0;
