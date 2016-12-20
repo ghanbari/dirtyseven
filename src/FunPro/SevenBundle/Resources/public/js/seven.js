@@ -633,6 +633,18 @@ var Seven = (function () {
                     });
                     $('#pick-color').modal('toggle');
                 } else if (cardNumber === '2') {
+                    if (Object.keys(seats).length== 2) {
+                        $.each(seats, function (username) {
+                            if (username == myUsername) {
+                                return;
+                            }
+
+                            playRequest({target: username});
+                            return;
+                        });
+                        return;
+                    }
+
                     $.each(seats, function (username) {
                         if (username == myUsername) {
                             return;
