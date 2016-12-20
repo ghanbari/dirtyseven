@@ -9,12 +9,6 @@ function deleteAllCookies() {
     }
 }
 
-//function changeMyStatus(status) {
-//    $('#my-status')
-//        .removeClass('online offline inviting invited playing')
-//        .addClass(status);
-//}
-
 var socket = WS.connect('ws://' + soho + ':' + sopo);
 var session;
 

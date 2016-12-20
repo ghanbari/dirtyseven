@@ -462,8 +462,9 @@
 <script src="{{ asset('assets/emojione/lib/js/emojione.min.js') }}"></script>
 <script src="{{ asset('assets/pokerjs/release/poker.min.js') }}"></script>
 <script>var soho = '{{ gos_web_socket_server_host }}', sopo = '{{ gos_web_socket_server_port }}';</script>
-{{ ws_client() }}
 {% javascripts
+'@GosWebSocketBundle/Resources/public/js/vendor/autobahn.min.js'
+'@GosWebSocketBundle/Resources/public/js/gos_web_socket_client.js'
 '@FunProHomeBundle/Resources/public/js/deck/messenger.js'
 '@FunProHomeBundle/Resources/public/js/deck/main.js'
 '@FunProHomeBundle/Resources/public/js/deck/avatar.js'
@@ -488,7 +489,16 @@
         emojione.imageType = 'svg';
         emojione.sprites = true;
         emojione.imagePathSVGSprites = '{{ asset('assets/emojione/assets/sprites/emojione.sprites.svg') }}';
-    })
+    });
+
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-89254549-1', 'auto');
+    ga('send', 'pageview');
+    ga('set', 'userId', {{ app.user.id }});
 </script>
 </body>
 </html>
