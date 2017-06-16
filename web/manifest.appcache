@@ -1,6 +1,6 @@
 CACHE MANIFEST
 
-# Time: Monday, 20 December 2016 23:13:28
+# Time: Monday, 16 June 2017 15:20:28
 
 assets/bootstrap/dist/css/bootstrap.min.css
 css/core.css
@@ -24,6 +24,5 @@ assets/moment/min/moment.min.js
 assets/moment-duration-format/lib/moment-duration-format.js
 assets/emojione/lib/js/emojione.min.js
 assets/pokerjs/release/poker.min.js
-assets/*
 
 js/core.js
