@@ -70,9 +70,9 @@ a.disabled {
     left: 0px;
 }
 
-.varagh {
-    z-index: 1;
-}
+/*.varagh {*/
+    /*z-index: 1;*/
+/*}*/
 
 #chat-room-container {
     z-index: 0;
@@ -173,4 +173,11 @@ a.disabled {
 
 .clear-button:hover span{
     color: #ffffff;
+}
+
+.help_icon {
+    position: fixed;
+    right: 5px;
+    bottom: 5px;
+    width: 50px;
 }

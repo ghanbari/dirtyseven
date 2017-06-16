@@ -138,7 +138,7 @@ $('form#send-friend-request').submit(function(event) {
             }
 
             messenger.notification({'from': 'Bot', 'message': result.status.message});
-            $('#friend-requests').modal('hide');
+
             $('#count-of-friend-request').text(result.data.count);
 
             if (result.status.code == -6) {

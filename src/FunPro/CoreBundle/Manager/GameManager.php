@@ -421,6 +421,7 @@ class GameManager
                 'startedAt' => time(),
                 'direction' => 1,
                 'penalty' => 0,
+                'pickedCard' => false,
             )
         );
     }
@@ -464,6 +465,7 @@ class GameManager
             $this->redis->rpush("Games:$gameId:Players", $res[0]);
         }
 
+        $this->redis->hset("Games:$gameId", 'pickedCard', false);
         $this->redis->hset("Games:$gameId", 'nextTurnAt', time() + 10);
         return $res[0];
     }
@@ -488,19 +490,28 @@ class GameManager
         $this->redis->exec();
     }
 
-    public function getPenalty($gameId, $username)
+
+    public function getPenalty($gameId, $username, $removalQueue = true, $count = 1)
     {
         if ($this->redis->scard("Games:$gameId:Cards") == 0) {
             $this->clearUpsetCards($gameId);
         }
 
         $this->redis->watch("Games:$gameId");
-        $count = 1 + $this->redis->hget("Games:$gameId", 'penalty');
+
+        if ($removalQueue) {
+            $count += (int) $this->redis->hget("Games:$gameId", 'penalty');
+        }
+        $count = max(1, $count);
+
         $this->redis->multi();
         for ($i = 0; $i < $count; $i++) {
             $this->redis->spop("Games:$gameId:Cards");
         }
-        $this->redis->hset("Games:$gameId", 'penalty', 0);
+
+        if ($removalQueue) {
+            $this->redis->hset("Games:$gameId", 'penalty', 0);
+        }
         $res = $this->redis->exec();
 
         $randCards = array();
@@ -515,6 +526,12 @@ class GameManager
         }
 
         return $randCards;
+    }
+
+    public function pickCard($gameId, $username)
+    {
+        $this->redis->hset("Games:$gameId", 'pickedCard', true);
+        return $this->getPenalty($gameId, $username, true, 0);
     }
 
     public function canPlay($gameId, $username)

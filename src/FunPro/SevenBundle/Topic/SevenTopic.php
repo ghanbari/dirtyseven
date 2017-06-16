@@ -48,9 +48,9 @@ class SevenTopic implements TopicInterface, TopicPeriodicTimerInterface
     {
     }
 
-    public function startNextTurnTimer(Topic $topic, $gameId, $forUser)
+    public function startNextTurnTimer(Topic $topic, $gameId, $forUser, $getPenalty = true)
     {
-        $goNextTurn = function () use ($topic, $gameId, $forUser) {
+        $goNextTurn = function () use ($topic, $gameId, $forUser, $getPenalty) {
             //give yellow card if player not played
 
             $nextTurn = $this->gameManager->nextTurn($gameId, $forUser);
@@ -58,17 +58,19 @@ class SevenTopic implements TopicInterface, TopicPeriodicTimerInterface
                 return;
             }
 
-            $penalties = $this->gameManager->getPenalty($gameId, $forUser);
+            if ($getPenalty) {
+                $penalties = $this->gameManager->getPenalty($gameId, $forUser);
 
-            $message = sprintf('%s get %d card as penalty', $forUser, count($penalties));
-            $this->inboxManager->addLog($gameId, $message);
-            $userSession = $this->clientHelper->getConnection($forUser);
-            if ($userSession) {
-                $topic->broadcast(
-                    array('type' => 'penalty', 'cards' => $penalties),
-                    array(),
-                    array($userSession->WAMP->sessionId)
-                );
+                $message = sprintf('%s get %d card as penalty', $forUser, count($penalties));
+                $this->inboxManager->addLog($gameId, $message);
+                $userSession = $this->clientHelper->getConnection($forUser);
+                if ($userSession) {
+                    $topic->broadcast(
+                        array('type' => 'penalty', 'cards' => $penalties),
+                        array(),
+                        array($userSession->WAMP->sessionId)
+                    );
+                }
             }
             $topic->broadcast(array(
                 'type' => 'playing',
@@ -110,7 +112,7 @@ class SevenTopic implements TopicInterface, TopicPeriodicTimerInterface
 
     public function removeNextTurnTimer($gameId)
     {
-        #FIXME: should not remove all timers, only timers for given game
+        //should not remove all timers, only timers for given game
         $this->periodicTimer->cancelPeriodicTimer($this, 'turn' . $gameId);
         return $this;
     }

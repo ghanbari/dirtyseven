@@ -28,6 +28,7 @@
     "moment-duration-format": "^1.3.0",
     "moment": "^2.16.0",
     "emojione": "^2.2.6",
-    "pokerjs": "*"
+    "pokerjs": "*",
+    "jqueryui-touch-punch": "*"
   }
 }

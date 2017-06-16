@@ -56,6 +56,8 @@ function loadLastMessage(friend, page) {
             }
         );
     }
+
+    $('#chat-content-' + friend + ' .card-block').scrollTop($('#chat-content-' + friend + ' .card-block')[0].scrollHeight);
 }
 
 function sendMessage(event) {
@@ -96,6 +98,8 @@ function showMessage(friend, payload, attachType) {
             options
         );
     }
+
+    $('#chat-content-' + friend + ' .card-block').scrollTop($('#chat-content-' + friend + ' .card-block')[0].scrollHeight);
 }
 
 socket.on('socket/connect', function (session)  {

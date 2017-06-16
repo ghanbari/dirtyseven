@@ -75,3 +75,12 @@ $(document).on('DOMNodeInserted', function(e) {
 $('.friends-list').on('friend_status', function (event, payload) {
     userStatus.update(payload.username, payload.status);
 });
+
+
+socket.on('socket/connect', function(sess) {
+    userStatus.update($.jStorage.get('myUsername'), 'online');
+});
+
+socket.on('socket/disconnect', function (error) {
+    userStatus.update($.jStorage.get('myUsername'), 'offline');
+});

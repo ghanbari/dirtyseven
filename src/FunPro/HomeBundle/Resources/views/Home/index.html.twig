@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/html">
+<html manifest="/manifest.appcache">
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="cache-control" content="no-cache">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" type="text/css" href="{{ asset('assets/bootstrap/dist/css/bootstrap.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/deck.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/menu.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/messenger.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/friend.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/game.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/funprohome/css/chatroom.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('assets/jquery-ui/themes/base/jquery-ui.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/bootstrap/dist/css/bootstrap.min.css') }}">
+
+    {% stylesheets '@FunProHomeBundle/Resources/public/css/deck.css'
+    'bundles/funprohome/css/menu.css'
+    'bundles/funprohome/css/messenger.css'
+    'bundles/funprohome/css/friend.css'
+    'bundles/funprohome/css/game.css'
+    'bundles/funprohome/css/chatroom.css'
+    filter='cssrewrite' output='css/core.css' %}
+    <link rel="stylesheet" type="text/css" href="{{ asset_url }}">
+    {% endstylesheets %}
     <link rel="stylesheet" media="screen and (orientation:portrait)" type="text/css" href="{{ asset('bundles/funprouser/css/portrait.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/font-awesome/css/font-awesome.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/jquery-ui/themes/base/jquery-ui.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/font-awesome/css/font-awesome.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/emojione/assets/css/emojione.min.css') }}">
 </head>
 <body>
@@ -21,36 +24,14 @@
 <div class="container-fluid">
     <div class="deck">
         <div class="menu">
-            <ul>
-                <li title="{{ app.user.username }}: Online & Free">
+            <ul class="nav navbar-nav">
+                <li class="nav-item" title="{{ app.user.username }}: Online & Free">
                     <span class="fa fa-circle user-status" data-username="{{ app.user.username }}" id="my-status"></span>
                     <img data-username="{{ app.user.username }}" src="{{ asset('images/38x38/default.png') }}" id="myAvatar" class="img-thumbnail img-fluid rounded-circle avatar" data-size="38">
                 </li>
-                <li>
-                    <a href="#" class="disabled dropdown-toggle game" data-toggle="dropdown">Join Game</a>
-                    <div class="dropdown-menu">
-                        <a href="#" class="dropdown-item game join" data-game-name="seven" id="join-seven">Seven</a>
-                        {#<a href="#" class="dropdown-item game join" data-game-name="shelem" id="join-shelem">Shelem</a>#}
-                        <a href="#game-suggests" data-toggle="modal" class="dropdown-item game suggests">Invitations</a>
-                    </div>
-                </li>
-                <li>
-                    <a href="#" class="disabled dropdown-toggle game" data-toggle="dropdown">New Game</a>
-                    <div class="dropdown-menu">
-                        <a href="#" class="dropdown-item game create" data-game-name="seven" id="create-seven">Seven</a>
-                        {#<a href="#" class="dropdown-item game create" data-game-name="shelem" id="create-shelem">Shelem</a>#}
-                        <a href="#current-game" data-toggle="modal" class="dropdown-item game current hidden-xs-up" id="current-game-link">Current</a>
-                    </div>
-                </li>
-                <li>
-                    <a data-toggle="dropdown" class="dropdown-toggle" href="#">Friends</a>
-                    <div class="dropdown-menu">
-                        <a class="dropdown-item" data-toggle="modal" href="#friend-requests">Friend Requests</a>
-                        <a class="dropdown-item" data-toggle="modal" href="#friend-suggests">Friend Suggests</a>
-                        <a class="dropdown-item" data-toggle="modal" href="#friends-list">Friends list</a>
-                    </div>
-                </li>
-                <li class="messenger">
+            </ul>
+            <ul class="nav navbar-nav">
+                <li class="nav-item messenger">
                     <div class="messenger-box">
                         <button class="plus show-messages-archive">&plus;</button>
                         <div id="messeges">
@@ -60,6 +41,37 @@
                     </div>
                 </li>
             </ul>
+            <button class="navbar-toggler hidden-md-up" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="fa fa-bars"></span>
+            </button>
+            <div class="collapse navbar-toggleable-sm" id="navbarResponsive">
+                <ul class="nav navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a href="#" class="disabled nav-link dropdown-toggle game" data-toggle="dropdown">Join Game</a>
+                        <div class="dropdown-menu">
+                            <a href="#" class="dropdown-item game join" data-game-name="seven" id="join-seven">Seven</a>
+                            {#<a href="#" class="dropdown-item game join" data-game-name="shelem" id="join-shelem">Shelem</a>#}
+                            <a href="#game-suggests" data-toggle="modal" class="dropdown-item game suggests">Invitations</a>
+                        </div>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a href="#" class="disabled nav-link dropdown-toggle game" data-toggle="dropdown">New Game</a>
+                        <div class="dropdown-menu">
+                            <a href="#" class="dropdown-item game create" data-game-name="seven" id="create-seven">Seven</a>
+                            {#<a href="#" class="dropdown-item game create" data-game-name="shelem" id="create-shelem">Shelem</a>#}
+                            <a href="#current-game" data-toggle="modal" class="dropdown-item game current hidden-xs-up" id="current-game-link">Current</a>
+                        </div>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a data-toggle="dropdown" class="nav-link dropdown-toggle" href="#">Friends</a>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" data-toggle="modal" href="#friend-requests">Friend Requests</a>
+                            <a class="dropdown-item" data-toggle="modal" href="#friend-suggests">Friend Suggests</a>
+                            <a class="dropdown-item" data-toggle="modal" href="#friends-list">Friends list</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
         </div>
 
         <div class="modal fade" id="friends-list" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -185,7 +197,7 @@
                             <div class="form-group" id="invite-player">
                                 <input name="player_name" type="text" placeholder="Friend Username" class="form-control">
                                 <div class="input-group" title="Round time">
-                                    <input name="turnTime" type="number" min="3" max="15" value="10" class="form-control">
+                                    <input name="turnTime" type="number" min="7" max="15" value="10" class="form-control">
                                     <span class="input-group-addon">Second</span>
                                 </div>
                                 <div class="input-group" title="Max score">
@@ -261,6 +273,7 @@
         </div>
     </div>
 </div>
+<a target="_blank" href="https://fa.wikipedia.org/wiki/%D9%87%D9%81%D8%AA_%D8%AE%D8%A8%DB%8C%D8%AB" class="help_icon"><img class="help_icon" src="data:image/svg+xml;utf8;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pgo8IS0tIEdlbmVyYXRvcjogQWRvYmUgSWxsdXN0cmF0b3IgMTkuMC4wLCBTVkcgRXhwb3J0IFBsdWctSW4gLiBTVkcgVmVyc2lvbjogNi4wMCBCdWlsZCAwKSAgLS0+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgdmVyc2lvbj0iMS4xIiBpZD0iTGF5ZXJfMSIgeD0iMHB4IiB5PSIwcHgiIHZpZXdCb3g9IjAgMCA1MDggNTA4IiBzdHlsZT0iZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCA1MDggNTA4OyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSIgd2lkdGg9IjUxMnB4IiBoZWlnaHQ9IjUxMnB4Ij4KPGNpcmNsZSBzdHlsZT0iZmlsbDojOTBERkFBOyIgY3g9IjI1NCIgY3k9IjI1NCIgcj0iMjU0Ii8+CjxwYXRoIHN0eWxlPSJmaWxsOiNGRkZGRkY7IiBkPSJNMjYzLjMsODcuNWMtODYuOCwwLTE1Ny4yLDcwLjQtMTU3LjIsMTU3LjJjMCwyNy4yLDYuOSw1Mi44LDE5LjEsNzUuMWwtMTkuMSw4Mi4xbDgyLjEtMTkuMSAgYzIyLjMsMTIuMiw0Ny45LDE5LjEsNzUuMSwxOS4xYzg2LjgsMCwxNTcuMi03MC40LDE1Ny4yLTE1Ny4yUzM1MC4xLDg3LjUsMjYzLjMsODcuNXoiLz4KPHBhdGggc3R5bGU9ImZpbGw6I0ZGNzA1ODsiIGQ9Ik0yNzEuNiwyODAuM2gtMjkuM3YtMTUuOGMwLTYuOSwwLjgtMTIuMSwyLjUtMTUuNGMxLjYtMy40LDUuMi03LjgsMTAuOC0xMy4zbDE4LjktMTguOSAgYzQtNC4zLDYtOS43LDYtMTYuMWMwLTYuNC0yLjEtMTEuNy02LjItMTUuOWMtNC4yLTQuMi05LjUtNi40LTE2LjEtNi40cy0xMiwyLTE2LjUsNi4xYy00LjQsNC4xLTcsOS41LTcuNywxNi4yaC0zMS40ICBjMS43LTE1LjQsNy43LTI3LjQsMTgtMzYuMWMxMC4zLTguNywyMy4xLTEzLjEsMzguNS0xMy4xczI3LjksNC4yLDM3LjYsMTIuNmM5LjcsOC40LDE0LjUsMjAuMSwxNC41LDM1LjFjMCwxMC40LTIuOCwxOS04LjUsMjUuOSAgYy0zLjMsNC4xLTUuOCw3LjEtNy41LDguOHMtNCwzLjktNi45LDYuNmMtMi45LDIuNy01LjMsNS03LjMsN3MtMy42LDMuNy00LjgsNS4xYy0zLjEsMy44LTQuNyw5LjItNC43LDE2LjF2MTEuNUgyNzEuNnogICBNMjU3LjUsMzM3LjljLTUuNCwwLTEwLjEtMS45LTE0LjEtNS42cy02LTguMi02LTEzLjVzMS45LTkuOCw1LjgtMTMuNmMzLjktMy44LDguNi01LjcsMTQtNS43YzUuNCwwLDEwLjEsMS45LDE0LjEsNS42ICBzNS45LDguMiw1LjksMTMuNXMtMS45LDkuOC01LjgsMTMuNkMyNjcuNiwzMzYsMjYyLjksMzM3LjksMjU3LjUsMzM3Ljl6Ii8+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+CjxnPgo8L2c+Cjwvc3ZnPgo=" /></a>
 <script type="text/html" id="messenger-notification">
     <p class="messenger-notification"><span class="message-author" data-content="author"></span>: <span class="message" data-content="message"></span></p>
 </script>
@@ -447,27 +460,32 @@
 </script>
 {% endverbatim %}
 <script src="{{ asset('assets/json2/json2.js') }}"></script>
-<script src="{{ asset('assets/jquery/dist/jquery.js') }}"></script>
-<script src="{{ asset('assets/jquery-ui/jquery-ui.js') }}"></script>
-<script src="{{ asset('assets/bootstrap/dist/js/bootstrap.js') }}"></script>
-<script src="{{ asset('assets/jquery-load-template/dist/jquery.loadTemplate.js') }}"></script>
+<script src="{{ asset('assets/jquery/dist/jquery.min.js') }}"></script>
+<script src="{{ asset('assets/jquery-ui/jquery-ui.min.js') }}"></script>
+<script src="{{ asset('assets/jqueryui-touch-punch/jquery.ui.touch-punch.min.js') }}"></script>
+<script src="{{ asset('assets/bootstrap/dist/js/bootstrap.min.js') }}"></script>
+<script src="{{ asset('assets/jquery-load-template/dist/jquery.loadTemplate.min.js') }}"></script>
 <script src="{{ asset('assets/jquery.nicescroll/dist/jquery.nicescroll.min.js') }}"></script>
-<script src="{{ asset('assets/jStorage/jstorage.js') }}"></script>
+<script src="{{ asset('assets/jStorage/jstorage.min.js') }}"></script>
 <script src="{{ asset('assets/js-php-unserialize/php-unserialize.js') }}"></script>
-<script src="{{ asset('assets/moment/moment.js') }}"></script>
+<script src="{{ asset('assets/moment/min/moment.min.js') }}"></script>
 <script src="{{ asset('assets/moment-duration-format/lib/moment-duration-format.js') }}"></script>
 <script src="{{ asset('assets/emojione/lib/js/emojione.min.js') }}"></script>
 <script src="{{ asset('assets/pokerjs/release/poker.min.js') }}"></script>
 <script>var soho = '{{ gos_web_socket_server_host }}', sopo = '{{ gos_web_socket_server_port }}';</script>
-{{ ws_client() }}
-<script src="{{ asset('bundles/funprohome/js/deck/messenger.js') }}"></script>
-<script src="{{ asset('bundles/funprohome/js/deck/main.js') }}"></script>
-<script src="{{ asset('bundles/funprohome/js/deck/avatar.js') }}"></script>
-<script src="{{ asset('bundles/funprohome/js/deck/friend.js') }}"></script>
-<script src="{{ asset('bundles/funprohome/js/deck/chatroom.js') }}"></script>
-<script src="{{ asset('bundles/funprohome/js/deck/user_status.js') }}"></script>
-<script src="{{ asset('bundles/funprohome/js/deck/game.menu.js') }}"></script>
-<script src="{{ asset('bundles/funproseven/js/seven.js') }}"></script>
+{% javascripts
+'@GosWebSocketBundle/Resources/public/js/vendor/autobahn.min.js'
+'@GosWebSocketBundle/Resources/public/js/gos_web_socket_client.js'
+'@FunProHomeBundle/Resources/public/js/deck/messenger.js'
+'@FunProHomeBundle/Resources/public/js/deck/main.js'
+'@FunProHomeBundle/Resources/public/js/deck/avatar.js'
+'@FunProHomeBundle/Resources/public/js/deck/friend.js'
+'@FunProHomeBundle/Resources/public/js/deck/chatroom.js'
+'@FunProHomeBundle/Resources/public/js/deck/user_status.js'
+'@FunProHomeBundle/Resources/public/js/deck/game.menu.js'
+'@FunProSevenBundle/Resources/public/js/seven.js' output='js/core.js' %}
+    <script src="{{ asset_url }}"></script>
+{% endjavascripts %}
 <script type="text/javascript">
     if (!$.jStorage.storageAvailable()) {
         alert('Local storage is not supported by your browser. Please disable "Private Mode", or upgrade to a modern browser.')
@@ -482,7 +500,16 @@
         emojione.imageType = 'svg';
         emojione.sprites = true;
         emojione.imagePathSVGSprites = '{{ asset('assets/emojione/assets/sprites/emojione.sprites.svg') }}';
-    })
+    });
+
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-89254549-1', 'auto');
+    ga('send', 'pageview');
+    ga('set', 'userId', {{ app.user.id }});
 </script>
 </body>
 </html>

@@ -9,6 +9,7 @@ var Seven = (function () {
     var countOfPlayersCards = {};
     var topCard;
     var turnTime;
+    var currentTurn;
 
     var discardCard = function (player, topCard) {
         var seat = seats[player];
@@ -76,15 +77,13 @@ var Seven = (function () {
                     }
                     break;
                 case 'penalty':
-                    payload.cards.forEach(function (cardName) {
+                    payload.cards.forEach(function (cardName, index) {
                         if (!cardName) {
                             return;
                         }
                         var message = 'You get ' + getEmojiNameOfCard(cardName) + ' as penalty';
                         messenger.notification({from: 'Bot', message: message}, false);
-                        myCards.push(cardName);
-                        myCards.sort();
-                        drawMyPickedCard(cardName);
+                        drawMyPickedCard(cardName, index == (payload.cards.length - 1));
                     });
                     break;
                 case 'playing':
@@ -107,7 +106,6 @@ var Seven = (function () {
                                     messenger.notification({from: 'Bot', message: message}, false);
                                 } else if (countOfPlayersCards[username] > count) {
                                     countOfPlayersCards[username] = count;
-                                    drawPlayerCard(username);
                                 }
                             }
                         });
@@ -125,7 +123,8 @@ var Seven = (function () {
 
                     if (payload.nextTurn !== undefined) {
                         var till = (new Date()).getTime() + (turnTime * 1000);
-                        startTurn(payload.nextTurn, till);
+                        currentTurn = payload.nextTurn;
+                        startTurn(till);
                     }
                     break;
                 case 'finish_round':
@@ -329,7 +328,11 @@ var Seven = (function () {
             drawMyCard(name);
         });
 
-        $('.varagh.seat0').draggable('enable');
+        if (currentTurn == myUsername) {
+            $('.varagh.seat0').draggable('enable');
+        } else {
+            $('.varagh.seat0').draggable('disable');
+        }
     };
 
     var drawPlayersCards = function () {
@@ -408,6 +411,8 @@ var Seven = (function () {
     };
 
     var drawTopCard = function (topCard) {
+        drawCardsStack();
+
         var reverseCard = $(Poker.getCardImage(cardHeight, topCard.charAt(0), topCard.substr(1)));
         reverseCard.addClass('varagh mid reverse');
         $(reverseCard).css('margin-left', '10px');
@@ -416,7 +421,6 @@ var Seven = (function () {
 
     var drawMid = function () {
         drawPickCardButton();
-        drawCardsStack();
         drawTopCard(topCard);
     };
 
@@ -428,8 +432,8 @@ var Seven = (function () {
         $('.pick-color').children().remove();
     };
 
-    var startTurn = function (turn, till) {
-        var seat = seats[turn];
+    var startTurn = function (till) {
+        var seat = seats[currentTurn];
         var animation = {};
         var option;
 
@@ -444,7 +448,10 @@ var Seven = (function () {
         animation[option] = '100%';
 
         if (seat == 0) {
+            $('.varagh.seat0').draggable('enable');
             myTurn();
+        } else {
+            $('.varagh.seat0').draggable('disable');
         }
 
         $('.seat' + seat + '-loading').animate(
@@ -461,17 +468,20 @@ var Seven = (function () {
         var seat = seats[username];
         var card = $(Poker.getBackImage(cardHeight));
         $(card).addClass('varagh mid');
-        $(card).css('margin-left', -(cardWidth + 4));
         $('.deck-container').append(card);
         $(card).switchClass('mid', 'seat' + seat);
-        drawPlayerCards(username, true);
+        setTimeout(function () {
+            drawPlayerCards(username, true);
+        }, 500);
     };
 
-    var drawMyPickedCard = function (cardName) {
+    var drawMyPickedCard = function (cardName, redrawCards) {
+        myCards.push(cardName);
+        myCards.sort();
+
         var card = $(Poker.getCardImage(cardHeight, cardName.charAt(0), cardName.substr(1)));
         $(card).addClass('varagh mid');
 
-        //$(card).css('margin-left', -(cardWidth + 4));
         var marginLeft = ($('.varagh.seat0').length - myCards.length / 2) * 40 / 100 * cardWidth;
         $(card).css('margin-left', marginLeft);
 
@@ -485,7 +495,9 @@ var Seven = (function () {
             'slow',
             function () {
                 $(card).remove();
-                drawMyCards();
+                if (redrawCards) {
+                    drawMyCards();
+                }
             }
         );
     };
@@ -498,11 +510,11 @@ var Seven = (function () {
                         return;
                     }
 
-                    result.data.cards.forEach(function (cardName) {
-                        myCards.push(cardName);
-                        myCards.sort();
-                        drawMyPickedCard(cardName);
+                    result.data.cards.forEach(function (cardName, index) {
+                        drawMyPickedCard(cardName, index == (result.data.cards.length - 1));
                     });
+                } else {
+                    messenger.notification({from: 'Bot', message: result.status.message});
                 }
             },
             function (error, desc) {
@@ -540,7 +552,8 @@ var Seven = (function () {
                 drawMid();
 
                 if (result.data.status == 'playing') {
-                    startTurn(result.data.nextTurn, result.data.nextTurnAt * 1000);
+                    currentTurn = result.data.nextTurn;
+                    startTurn(result.data.nextTurnAt * 1000);
                 }
             },
             function (error, desc) {
@@ -578,19 +591,18 @@ var Seven = (function () {
                                     }
                                 );
                             } else if (result.status.code == -2) {
-                                ui.draggable.animate($(ui.draggable).data('position'), 500);
-                                setTimeout(drawMyCards, 500);
+                                //drawMyPickedCard(result.data.penalties);
+                                //ui.draggable.animate($(ui.draggable).data('position'), 500);
+                                //setTimeout(drawMyCards, 500);
                             } else if (result.status.code == -3) {
                                 ui.draggable.animate($(ui.draggable).data('position'), 500);
                                 setTimeout(drawMyCards, 500);
-                                result.data.penalties.forEach(function (cardName) {
+                                result.data.penalties.forEach(function (cardName, index) {
                                     if (!cardName) {
                                         return;
                                     }
 
-                                    myCards.push(cardName);
-                                    myCards.sort();
-                                    setTimeout(drawMyPickedCard(cardName), 100);
+                                    drawMyPickedCard(cardName, index == (result.data.penalties.length - 1));
                                 });
                             }
                         },
@@ -621,6 +633,18 @@ var Seven = (function () {
                     });
                     $('#pick-color').modal('toggle');
                 } else if (cardNumber === '2') {
+                    if (Object.keys(seats).length== 2) {
+                        $.each(seats, function (username) {
+                            if (username == myUsername) {
+                                return;
+                            }
+
+                            playRequest({target: username});
+                            return;
+                        });
+                        return;
+                    }
+
                     $.each(seats, function (username) {
                         if (username == myUsername) {
                             return;
