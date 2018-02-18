@@ -344,7 +344,7 @@ var avatars = (function () {
     avatar.prototype.loadNewImage = function () {
         var avatars = $.jStorage.get('avatars');
         var that = this;
-        $.post('/app_dev.php/user/avatars', {usernames: this._new_avatars}, function(data, status, xhr) {
+        $.post('/user/avatars', {usernames: this._new_avatars}, function(data, status, xhr) {
             if (status === 'success') {
                 $.each(data, function (username, url) {
                     avatars[username] = url;

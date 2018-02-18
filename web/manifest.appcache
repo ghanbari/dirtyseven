@@ -1,6 +1,6 @@
 CACHE MANIFEST
 
-# Time: Monday, 16 June 2017 15:20:28
+# Time: Monday, 16 June 2017 18:38:28
 
 assets/bootstrap/dist/css/bootstrap.min.css
 css/core.css
@@ -8,8 +8,6 @@ bundles/funprouser/css/portrait.css
 assets/jquery-ui/themes/base/jquery-ui.min.css
 assets/font-awesome/css/font-awesome.min.css
 assets/emojione/assets/css/emojione.min.css
-
-images/*
 
 assets/json2/json2.js
 assets/jquery/dist/jquery.min.js
@@ -26,3 +24,11 @@ assets/emojione/lib/js/emojione.min.js
 assets/pokerjs/release/poker.min.js
 
 js/core.js
+
+images/38x38/default.png
+images/140x140/default.png
+images/200x200/default.png
+images/215x215/default.png
+images/256x256/default.png
+default.png
+icon.png
